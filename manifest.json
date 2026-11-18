@@ -6,77 +6,88 @@
    "title": "The Cup of Creation",
    "file": "audio/genesis_01.mp3?v=ab33fc07",
    "movement": 1,
-   "next": null
+   "next": null,
+   "text": "text/genesis_01.json?v=990285fe"
   },
   {
    "chapter": 2,
    "title": "The Cup At Rest",
    "file": "audio/genesis_02.mp3?v=5de3be6b",
    "movement": 1,
-   "next": null
+   "next": null,
+   "text": "text/genesis_02.json?v=4b419a44"
   },
   {
    "chapter": 3,
    "title": "The Cup Drained",
    "file": "audio/genesis_03.mp3?v=0300fcf2",
    "movement": 2,
-   "next": null
+   "next": null,
+   "text": "text/genesis_03.json?v=cbcef6e4"
   },
   {
    "chapter": 4,
    "title": "The Cup Rejected",
    "file": "audio/genesis_04.mp3?v=c7d4cc08",
    "movement": 2,
-   "next": 3
+   "next": 3,
+   "text": "text/genesis_04.json?v=49aa58b1"
   },
   {
    "chapter": 5,
    "title": "The Cup Passed Down",
    "file": "audio/genesis_05.mp3?v=a38340f0",
    "movement": 2,
-   "next": 3
+   "next": 3,
+   "text": "text/genesis_05.json?v=a0f3eb74"
   },
   {
    "chapter": 6,
    "title": "The Cup Overflows",
    "file": "audio/genesis_06.mp3?v=67c8c2ee",
    "movement": 3,
-   "next": null
+   "next": null,
+   "text": "text/genesis_06.json?v=69bf3d15"
   },
   {
    "chapter": 7,
    "title": "The Cup Poured Out",
    "file": "audio/genesis_07.mp3?v=838884af",
    "movement": 3,
-   "next": null
+   "next": null,
+   "text": "text/genesis_07.json?v=5aec90fe"
   },
   {
    "chapter": 8,
    "title": "The Cup Recedes",
    "file": "audio/genesis_08.mp3?v=f54a0d2e",
    "movement": 3,
-   "next": null
+   "next": null,
+   "text": "text/genesis_08.json?v=7598aa9c"
   },
   {
    "chapter": 9,
    "title": "The Cup Sealed",
    "file": "audio/genesis_09.mp3?v=399c17a8",
    "movement": 3,
-   "next": null
+   "next": null,
+   "text": "text/genesis_09.json?v=ba69d557"
   },
   {
    "chapter": 10,
    "title": "The Cup Divides",
    "file": "audio/genesis_10.mp3?v=c644d92b",
    "movement": 3,
-   "next": 4
+   "next": 4,
+   "text": "text/genesis_10.json?v=e2425be9"
   },
   {
    "chapter": 11,
    "title": "The Cup Scattered",
    "file": "audio/genesis_11.mp3?v=0b6b90ff",
    "movement": 3,
-   "next": 4
+   "next": 4,
+   "text": "text/genesis_11.json?v=39ca29ed"
   },
   {
    "chapter": 12,
@@ -359,5 +370,6 @@
   "4": "Call \u00b7 Pilgrimage \u00b7 Promise",
   "5": "Struggle \u00b7 Transformation",
   "6": "Providence \u00b7 Reconciliation \u00b7 Promise Carried Forward"
- }
+ },
+ "ask_url": null
 }
