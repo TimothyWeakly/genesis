@@ -166,49 +166,56 @@
    "title": "The Cup of Laughter",
    "file": "audio/genesis_21.mp3?v=cfd7dbaf",
    "movement": 4,
-   "next": null
+   "next": null,
+   "text": "text/genesis_21.json?v=99eed3e5"
   },
   {
    "chapter": 22,
    "title": "The Cup of Testing",
    "file": "audio/genesis_22.mp3?v=4e29f041",
    "movement": 4,
-   "next": null
+   "next": null,
+   "text": "text/genesis_22.json?v=397c68fd"
   },
   {
    "chapter": 23,
    "title": "The Cup Buried",
    "file": "audio/genesis_23.mp3?v=50713a5e",
    "movement": 4,
-   "next": null
+   "next": null,
+   "text": "text/genesis_23.json?v=d08cfe5a"
   },
   {
    "chapter": 24,
    "title": "The Cup of the Well",
    "file": "audio/genesis_24.mp3?v=432e7527",
    "movement": 4,
-   "next": null
+   "next": null,
+   "text": "text/genesis_24.json?v=4f62afc0"
   },
   {
    "chapter": 25,
    "title": "The Cup of Generations",
    "file": "audio/genesis_25.mp3?v=30a1bf1e",
    "movement": 4,
-   "next": null
+   "next": null,
+   "text": "text/genesis_25.json?v=70e34166"
   },
   {
    "chapter": 26,
    "title": "The Cup Inherited",
    "file": "audio/genesis_26.mp3?v=8b946fe1",
    "movement": 4,
-   "next": 5
+   "next": 5,
+   "text": "text/genesis_26.json?v=f9bf914a"
   },
   {
    "chapter": 27,
    "title": "The Cup Stolen",
    "file": "audio/genesis_27.mp3?v=cb56d1e9",
    "movement": 4,
-   "next": 5
+   "next": 5,
+   "text": "text/genesis_27.json?v=801bd35a"
   },
   {
    "chapter": 28,

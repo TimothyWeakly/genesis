@@ -61,9 +61,9 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
  <div class="ctl"><button id="prev" aria-label="Previous chapter">&#9198;</button><button id="back" aria-label="Back 15 seconds">&#8634;</button>
   <button id="play" class="play" aria-label="Play">&#9654;</button><button id="fwd" aria-label="Forward 15 seconds">&#8635;</button><button id="next" aria-label="Next chapter">&#9197;</button>
   <button id="listBtn" aria-label="Chapters">&#9776;</button></div>
- <div class="mini"><button id="cc" class="on" aria-pressed="true">Text on</button><button id="ask">Ask Genesis Jedidiah</button></div>
+ <div class="mini"><button id="cc" class="on" aria-pressed="true">Text on</button><button id="ask">Ask Jedidiah</button></div>
 </div></div>
-<div id="askp" role="dialog" aria-label="Ask Genesis Jedidiah"><h3>ASK GENESIS JEDIDIAH</h3><div id="askb"></div><button id="askx">Close</button></div>
+<div id="askp" role="dialog" aria-label="Ask Jedidiah"><h3>ASK JEDIDIAH</h3><div id="askb"></div><button id="askx">Close</button></div>
 <div id="sheet"><button class="close" id="close" aria-label="Close">&times;</button><h2>GENESIS</h2><div id="list"></div></div>
 <audio id="a" preload="metadata"></audio>
 <script>
@@ -90,20 +90,34 @@ function draw(t){
 /* ---------- the speaking sphere: the chapter's own words, timed by the narration, poured from the core into the text line ----------
    The words come only from text/genesis_NN.json (the text that was narrated). Timing is phrase-level. If that file is missing
    the audio still plays and no text is shown. Reduced-motion visitors, and "Text on" without motion, get the plain line only. */
-var T=null,pi=-1,fly=null,capOn=true,still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+var T=null,pi=-1,fly=null,wait=false,capOn=true,still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 try{capOn=localStorage.getItem(K+'_cc')!=='0'}catch(e){}
 function setCap(){var b=$('cc');b.classList.toggle('on',capOn);b.textContent=capOn?'Text on':'Text off';b.setAttribute('aria-pressed',capOn);$('cap').style.display=capOn?'flex':'none';$('capsrc').style.display=capOn?'block':'none'}
 function loadText(i){T=null;pi=-1;fly=null;$('cap').textContent='';$('capsrc').textContent='';var c=CH[i];if(!c.text)return;
  fetch(c.text).then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&idx===i){T=j;$('capsrc').textContent=j.edition_short+' · '+j.level_note}}).catch(function(){})}
+function launch(text,t){var r=$('cap').getBoundingClientRect();tgt={x:(r.left+r.width/2)*DPR,y:(r.top+r.height*.35)*DPR};
+ if(capOn&&!still&&!document.hidden){fly={w:text.split(' '),t0:t,x:tgt.x,y:tgt.y};$('cap').style.opacity=.25;setTimeout(function(){$('cap').style.opacity=1},520)}}
+/* Jedidiah answering: the narration waits, and the Sphere pours his answer the same way it pours the chapter, one sentence at a
+   time, with the chapter's own words he relies on shown in quotation marks. Then the narration goes on. */
+var J=null,tgt=null;
+function speak(parts,resume){J={p:parts,i:-1,until:0,resume:resume};$('capsrc').textContent='Jedidiah · answering from this chapter’s text'}
+function jTick(t){if(!J)return;if(t<J.until)return;J.i++;
+ if(J.i>=J.p.length){var r=J.resume;J=null;pi=-1;$('cap').textContent='';$('capsrc').textContent=T?T.edition_short+' · '+T.level_note:'';if(r)A.play().catch(function(){});return}
+ var s=J.p[J.i];$('cap').textContent=s;J.until=t+Math.max(2600,s.split(' ').length*360);launch(s,t)}
 function capTick(t){   /* which phrase is being spoken: runs on the audio's own time updates, so the text keeps up even when the picture is not being drawn */
+ if(J){jTick(t);return}
  if(!T)return;var p=T.phrases,ct=A.currentTime,i=pi<0?0:pi;
  if(i>=p.length||p[i][0]>ct)i=0;while(i+1<p.length&&p[i+1][0]<=ct)i++;
- if(i!==pi){pi=i;$('cap').textContent=p[i][1];if(capOn&&!still&&!A.paused&&!document.hidden){var r=$('cap').getBoundingClientRect();fly={w:p[i][1].split(' '),t0:t,x:(r.left+r.width/2)*DPR,y:(r.top+r.height*.35)*DPR};$('cap').style.opacity=.25;setTimeout(function(){$('cap').style.opacity=1},520)}}}
+ if(i!==pi){pi=i;$('cap').textContent=p[i][1];if(!A.paused)launch(p[i][1],t)}}
 function pour(t,cx,cy){
- capTick(t);if(!T||!capOn||!fly)return;var n=fly.w.length,gap=Math.min(90,600/n),done=true;g.font='600 '+(15*DPR)+'px system-ui,-apple-system,Segoe UI,Roboto,sans-serif';g.textAlign='center';
+ capTick(t);
+ if(capOn&&!still&&tgt&&(J||wait||(T&&!A.paused))){   /* the outpouring itself: light running from the Sphere's core down into the words */
+  for(var q=0;q<7;q++){var u=((t*.00055+q/7)%1),e=u*u*(3-2*u),bx=(1-e)*(1-e)*cx+2*(1-e)*e*(cx+(tgt.x-cx)*.2)+e*e*tgt.x,by=(1-e)*(1-e)*cy+2*(1-e)*e*(cy+(tgt.y-cy)*.55)+e*e*tgt.y;
+   g.globalAlpha=.25+.6*Math.sin(u*3.1416);g.fillStyle=J||wait?'#4fd1c5':'#e8c06a';g.beginPath();g.arc(bx,by,DPR*(1.2+1.4*Math.sin(u*3.1416)),0,6.283);g.fill()}g.globalAlpha=1}
+ if(!capOn||!fly)return;var n=fly.w.length,gap=Math.min(90,600/n),done=true;g.font='600 '+(17*DPR)+'px system-ui,-apple-system,Segoe UI,Roboto,sans-serif';g.textAlign='center';
  for(var k=0;k<n;k++){var u=(t-fly.t0-k*gap)/700;if(u<0){done=false;continue}if(u>=1)continue;done=false;var e=u*u*(3-2*u),tx=fly.x+(k-(n-1)/2)*14*DPR,
   bx=(1-e)*(1-e)*cx+2*(1-e)*e*(cx+(tx-cx)*.2)+e*e*tx,by=(1-e)*(1-e)*cy+2*(1-e)*e*(cy+(fly.y-cy)*.55)+e*e*fly.y;
-  g.globalAlpha=u<.75?1:(1-u)*4;g.fillStyle='#e8c06a';g.fillText(fly.w[k],bx,by)}
+  g.globalAlpha=u<.75?1:(1-u)*4;g.fillStyle=J?'#9fe6dc':'#e8c06a';g.fillText(fly.w[k],bx,by)}
  g.globalAlpha=1;g.textAlign='start';if(done)fly=null}
 /* ---------- movement art: void -> emerge -> hold -> dissolve -> between -> next ---------- */
 function setPlate(el,n,amt){if(!n){el.style.opacity=0;return}var u='art/movement_'+String(n).padStart(2,'0')+'.jpg';if(el.dataset.n!=n){el.dataset.n=n;el.style.backgroundImage='url('+u+')'}
@@ -145,16 +159,28 @@ setCap();$('cc').onclick=function(){capOn=!capOn;try{localStorage.setItem(K+'_cc
 /* ---------- Ask Genesis Jedidiah: optional. Listening never depends on it. It is offered only when the manifest names a
    public ask service (manifest.ask_url); the laptop is never contacted directly from this page. ---------- */
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-$('ask').onclick=function(){var b=$('askb'),c=idx>=0?CH[idx]:null;
- if(!M||!M.ask_url){b.innerHTML='<p>Genesis Jedidiah is not open to the public yet.</p><p class="q">Listening and reading work without it. When it opens, your question will be answered only from the text of the chapter you are hearing, with the words it relies on quoted beside the answer.</p>'}
- else{b.innerHTML='<p class="q">'+(c?'Genesis '+c.chapter+' · '+esc(c.title):'Choose a chapter first')+'</p><textarea id="askq" maxlength="600" placeholder="Your question about this chapter"></textarea><br><button id="asks">Ask</button><div id="aska"></div>';
-  $('asks').onclick=function(){var q=$('askq').value.trim();if(!q||!c)return;$('aska').innerHTML='<p class="q">Asking…</p>';
-   fetch(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',chapter:c.chapter,phrase:(T&&pi>=0)?T.phrases[pi][1]:null,question:q})})
-   .then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){var h='<p>'+esc(j.answer||'')+'</p>';(j.claims||[]).forEach(function(k){h+='<p class="q">“'+esc(k.quote)+'” — Genesis '+esc(k.chapter)+'</p>'});
-    (j.unknowns||[]).forEach(function(u){h+='<p class="q">Unknown: '+esc(u)+'</p>'});$('aska').innerHTML=h})
-   .catch(function(){$('aska').innerHTML='<p class="q">Genesis Jedidiah is not available right now. Nothing was made up in its place.</p>'})}}
- $('askp').classList.add('open')};
+var lastA='';
+function away(msg){return '<p>'+msg+'</p><p class="q">Listening and reading work without him. When Jedidiah is here he answers only from the text of the chapter you are hearing, and shows the chapter’s own words he relies on.</p>'}
+function timed(url,opt,ms){var c=new AbortController(),k=setTimeout(function(){c.abort()},ms);opt.signal=c.signal;return fetch(url,opt).finally(function(){clearTimeout(k)})}
+$('ask').onclick=function(){var b=$('askb'),c=idx>=0?CH[idx]:null;$('askp').classList.add('open');
+ if(!M||!M.ask_url){b.innerHTML=away('Jedidiah cannot be reached from this page yet.');return}
+ if(!c){b.innerHTML='<p>Choose a chapter first, so Jedidiah knows which text you are asking about.</p>';return}
+ b.innerHTML='<p class="q">Looking for Jedidiah…</p>';
+ timed(M.ask_url.replace(/ask$/,'health'),{},6000).then(function(r){return r.json()}).then(function(h){
+  b.innerHTML='<p class="q">Genesis '+c.chapter+' · '+esc(c.title)+(h.busy?' · Jedidiah is busy; your question may wait a little':'')+'</p><textarea id="askq" maxlength="600" placeholder="Ask Jedidiah about this chapter"></textarea><br><button id="asks">Ask Jedidiah</button><div id="aska">'+lastA+'</div>';
+  $('asks').onclick=function(){var q=$('askq').value.trim();if(!q)return;var t0=Date.now(),was=!A.paused;A.pause();wait=true;launch('',performance.now());
+   $('asks').disabled=true;var tick=setInterval(function(){$('aska').innerHTML='<p class="q">Jedidiah is reading Genesis '+c.chapter+'… '+Math.round((Date.now()-t0)/1000)+' s</p>'},1000);
+   timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',chapter:c.chapter,question:q})},240000)
+   .then(function(r){return r.json()}).then(function(j){clearInterval(tick);wait=false;
+    var h='<p>'+esc(j.answer||'')+'</p>',parts=(j.answer||'').match(/[^.!?]+[.!?]+["”']?|[^.!?]+$/g)||[];parts=parts.map(function(s){return s.trim()}).filter(Boolean);
+    (j.claims||[]).forEach(function(k){h+='<p class="q">“'+esc(k.quote)+'” — Genesis '+esc(k.chapter)+'</p>';parts.push('“'+k.quote+'” — Genesis '+k.chapter)});
+    (j.unknowns||[]).forEach(function(u){h+='<p class="q">Unknown: '+esc(u)+'</p>';parts.push('Unknown: '+u)});
+    lastA='<p class="q">You asked: '+esc(q)+'</p>'+h;$('aska').innerHTML=lastA;$('asks').disabled=false;
+    if(parts.length){$('askp').classList.remove('open');speak(parts,was)}else if(was)A.play().catch(function(){})})
+   .catch(function(){clearInterval(tick);wait=false;$('asks').disabled=false;$('aska').innerHTML='<p class="q">Jedidiah did not answer this time. Nothing was made up in his place.</p>';if(was)A.play().catch(function(){})})}})
+ .catch(function(){b.innerHTML=away('Jedidiah is not reachable right now.')})};
 $('askx').onclick=function(){$('askp').classList.remove('open')};
+setInterval(function(){capTick(performance.now())},250);   /* the words keep time even when the picture is not being drawn, and while the narration waits for Jedidiah */
 requestAnimationFrame(draw);
 })();
 </script>
