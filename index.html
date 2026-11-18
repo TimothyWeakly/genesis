@@ -10,12 +10,12 @@
 :root{--gold:#e8c06a;--teal:#4fd1c5;--text:#efe6d2;--dim:#9a8f78;--bg:#030305}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
-#field{position:fixed;inset:0;width:100%;height:100%}
+#field,#flow{position:fixed;inset:0;width:100%;height:100%}#flow{pointer-events:none}
 .plate{position:fixed;left:50%;top:44%;width:min(78vw,52vh);aspect-ratio:3/4;transform:translate(-50%,-50%) scale(1.08);
  background-size:cover;background-position:center;border-radius:6px;opacity:0;pointer-events:none;
  mask-image:radial-gradient(ellipse 72% 70% at 50% 50%,#000 55%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 72% 70% at 50% 50%,#000 55%,transparent 100%);
  will-change:opacity,filter,transform}
-#mv{position:fixed;left:0;right:0;top:calc(10px + env(safe-area-inset-top));text-align:center;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);opacity:.85;transition:opacity 2s}
+#mv{display:none;position:fixed;left:0;right:0;top:calc(10px + env(safe-area-inset-top));text-align:center;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);opacity:.85;transition:opacity 2s}
 .bar{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,#030305ee 30%)}
 .wrap{max-width:560px;margin:0 auto}
 .now{text-align:center;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -34,8 +34,15 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 .ch{max-width:560px;margin:4px auto;display:flex;gap:12px;align-items:center;width:100%;background:#0d0c0a;border:1px solid #221d14;border-radius:10px;padding:10px 12px;color:var(--text);font:inherit;text-align:left;cursor:pointer}
 .ch b{min-width:30px;height:30px;border-radius:15px;display:grid;place-items:center;background:#1d170d;color:var(--gold);font-size:13px}
 .ch.on{border-color:var(--gold)}
+#prompt{border:1px solid #3a3019;border-radius:16px;background:#0b0a08e6;padding:10px 14px;cursor:text;box-shadow:0 0 26px #e8c06a14;transition:border-color .3s}
+#prompt.asking{border-color:var(--teal)}
+#prompt{transition:border-color .3s,box-shadow .5s}#prompt.pour{box-shadow:0 0 38px #e8c06a59;border-color:#7a6535}
 #cap{min-height:3.1em;display:flex;align-items:center;justify-content:center;text-align:center;font-size:17px;line-height:1.35;color:var(--text);padding:0 4px;transition:opacity .35s}
-#capsrc{text-align:center;font-size:10.5px;letter-spacing:.06em;color:var(--dim);margin:2px 0 6px;min-height:1.2em}
+#cap:empty::before{content:'Tap here to ask Jedidiah';color:var(--dim);font-size:15px}
+#askf{display:flex;gap:8px;align-items:center;min-height:3.1em}#askf[hidden]{display:none}
+#askq{flex:1;background:none;border:0;outline:0;color:var(--text);font:inherit;font-size:16px;min-width:0}
+#asks{background:var(--gold);color:#140c02;border:0;border-radius:18px;width:36px;height:36px;font-size:16px;cursor:pointer}
+#capsrc{text-align:center;font-size:11px;letter-spacing:.14em;color:var(--teal);margin:3px 0 6px;min-height:1.1em}
 .mini{display:flex;justify-content:center;gap:18px;margin-top:4px}
 .mini button{background:none;border:0;color:var(--dim);font:inherit;font-size:12.5px;letter-spacing:.06em;padding:8px 6px;cursor:pointer}
 .mini button.on{color:var(--gold)}
@@ -52,16 +59,20 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 <body>
 <canvas id="field"></canvas>
 <div class="plate" id="pA"></div><div class="plate" id="pB"></div>
+<canvas id="flow"></canvas>
 <div id="mv"></div>
 <button id="start" aria-label="Enter and listen"><span>ENTER · GENESIS</span></button>
 <div class="bar"><div class="wrap">
- <div id="cap" aria-live="off"></div><div id="capsrc"></div>
+ <div id="prompt" role="button" tabindex="0" aria-label="The words being read. Tap to ask Jedidiah a question.">
+  <div id="cap" aria-live="off"></div>
+  <form id="askf" hidden><input id="askq" maxlength="600" placeholder="Ask Jedidiah about this chapter" enterkeyhint="send" autocomplete="off"><button id="asks" type="submit" aria-label="Ask">&#10148;</button></form>
+ </div><div id="capsrc"></div>
  <div class="now" id="now">Genesis</div>
  <div class="seek"><span id="cur">0:00</span><input id="seek" type="range" min="0" max="1000" value="0" aria-label="Seek"><span id="dur">0:00</span></div>
  <div class="ctl"><button id="prev" aria-label="Previous chapter">&#9198;</button><button id="back" aria-label="Back 15 seconds">&#8634;</button>
   <button id="play" class="play" aria-label="Play">&#9654;</button><button id="fwd" aria-label="Forward 15 seconds">&#8635;</button><button id="next" aria-label="Next chapter">&#9197;</button>
   <button id="listBtn" aria-label="Chapters">&#9776;</button></div>
- <div class="mini"><button id="cc" class="on" aria-pressed="true">Text on</button><button id="ask">Ask Jedidiah</button></div>
+ <div class="mini"><button id="cc" class="on" aria-pressed="true">Text on</button><button id="ask" hidden>Jedidiah&rsquo;s last answer</button></div>
 </div></div>
 <div id="askp" role="dialog" aria-label="Ask Jedidiah"><h3>ASK JEDIDIAH</h3><div id="askb"></div><button id="askx">Close</button></div>
 <div id="sheet"><button class="close" id="close" aria-label="Close">&times;</button><h2>GENESIS</h2><div id="list"></div></div>
@@ -72,7 +83,8 @@ var $=function(i){return document.getElementById(i)},A=$('a'),M,CH=[],idx=-1,K='
 function fmt(s){s=Math.max(0,Math.floor(s||0));var m=Math.floor(s/60),x=s%60;return m+':'+String(x).padStart(2,'0')}
 /* ---------- the field: stars streaming toward a far dark sphere with a gold/teal rim ---------- */
 var cv=$('field'),g=cv.getContext('2d'),W,H,DPR=Math.min(2,window.devicePixelRatio||1),S=[];
-function size(){W=cv.width=innerWidth*DPR;H=cv.height=innerHeight*DPR}size();addEventListener('resize',size);
+var fc=$('flow'),fx=fc.getContext('2d');
+function size(){W=cv.width=fc.width=innerWidth*DPR;H=cv.height=fc.height=innerHeight*DPR}size();addEventListener('resize',size);
 for(var i=0;i<520;i++)S.push({a:Math.random()*6.283,r:Math.random(),s:.15+Math.random()*.85,h:Math.random()<.18});
 var glow=0;
 function draw(t){
@@ -86,39 +98,51 @@ function draw(t){
  g.strokeStyle='rgba(232,192,106,'+(.55+.25*Math.sin(t*.0007))+')';g.lineWidth=DPR*1.2;g.beginPath();g.arc(cx,cy,R,0,6.283);g.stroke();
  g.strokeStyle='rgba(79,209,197,.25)';g.lineWidth=DPR*.8;g.beginPath();g.arc(cx,cy,R*1.012,0,6.283);g.stroke();
  g.fillStyle='rgba(255,226,150,.95)';g.beginPath();g.arc(cx,H*.86,DPR*1.6,0,6.283);g.fill();          /* the far point of light */
- pour(t,cx,cy);visual();requestAnimationFrame(draw)}
+ fx.clearRect(0,0,W,H);pour(t,cx,cy);visual();requestAnimationFrame(draw)}
 /* ---------- the speaking sphere: the chapter's own words, timed by the narration, poured from the core into the text line ----------
    The words come only from text/genesis_NN.json (the text that was narrated). Timing is phrase-level. If that file is missing
    the audio still plays and no text is shown. Reduced-motion visitors, and "Text on" without motion, get the plain line only. */
 var T=null,pi=-1,fly=null,wait=false,capOn=true,still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 try{capOn=localStorage.getItem(K+'_cc')!=='0'}catch(e){}
-function setCap(){var b=$('cc');b.classList.toggle('on',capOn);b.textContent=capOn?'Text on':'Text off';b.setAttribute('aria-pressed',capOn);$('cap').style.display=capOn?'flex':'none';$('capsrc').style.display=capOn?'block':'none'}
+function setCap(){var b=$('cc');b.classList.toggle('on',capOn);b.textContent=capOn?'Text on':'Text off';b.setAttribute('aria-pressed',capOn);if(!capOn&&!J){$('cap').textContent='';pi=-1}$('capsrc').style.visibility=capOn?'visible':'hidden'}
 function loadText(i){T=null;pi=-1;fly=null;$('cap').textContent='';$('capsrc').textContent='';var c=CH[i];if(!c.text)return;
- fetch(c.text).then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&idx===i){T=j;$('capsrc').textContent=j.edition_short+' · '+j.level_note}}).catch(function(){})}
+ fetch(c.text).then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&idx===i)T=j}).catch(function(){})}
 function launch(text,t){var r=$('cap').getBoundingClientRect();tgt={x:(r.left+r.width/2)*DPR,y:(r.top+r.height*.35)*DPR};
- if(capOn&&!still&&!document.hidden){fly={w:text.split(' '),t0:t,x:tgt.x,y:tgt.y};$('cap').style.opacity=.25;setTimeout(function(){$('cap').style.opacity=1},520)}}
+ if(capOn&&!still&&!document.hidden){burst=t;$('prompt').classList.add('pour');setTimeout(function(){$('prompt').classList.remove('pour')},760);fly={w:text.split(' '),t0:t,x:tgt.x,y:tgt.y};$('cap').style.opacity=.25;setTimeout(function(){$('cap').style.opacity=1},520)}}
 /* Jedidiah answering: the narration waits, and the Sphere pours his answer the same way it pours the chapter, one sentence at a
    time, with the chapter's own words he relies on shown in quotation marks. Then the narration goes on. */
 var J=null,tgt=null;
-function speak(parts,resume){J={p:parts,i:-1,until:0,resume:resume};$('capsrc').textContent='Jedidiah · answering from this chapter’s text'}
+function speak(parts,resume){J={p:parts,i:-1,until:0,resume:resume};$('capsrc').textContent='Jedidiah'}
 function jTick(t){if(!J)return;if(t<J.until)return;J.i++;
- if(J.i>=J.p.length){var r=J.resume;J=null;pi=-1;$('cap').textContent='';$('capsrc').textContent=T?T.edition_short+' · '+T.level_note:'';if(r)A.play().catch(function(){});return}
+ if(J.i>=J.p.length){var r=J.resume;J=null;pi=-1;$('cap').textContent='';$('capsrc').textContent='';if(r)A.play().catch(function(){});return}
  var s=J.p[J.i];$('cap').textContent=s;J.until=t+Math.max(2600,s.split(' ').length*360);launch(s,t)}
 function capTick(t){   /* which phrase is being spoken: runs on the audio's own time updates, so the text keeps up even when the picture is not being drawn */
  if(J){jTick(t);return}
- if(!T)return;var p=T.phrases,ct=A.currentTime,i=pi<0?0:pi;
+ if(!T||!capOn||wait)return;var p=T.phrases,ct=A.currentTime,i=pi<0?0:pi;
  if(i>=p.length||p[i][0]>ct)i=0;while(i+1<p.length&&p[i+1][0]<=ct)i++;
  if(i!==pi){pi=i;$('cap').textContent=p[i][1];if(!A.paused)launch(p[i][1],t)}}
+/* The outpouring: ribbons of light sway from the Sphere's core down into the prompt, motes ride them, the Sphere answers each
+   phrase with a ring, and the words themselves emerge small and glowing at the core and grow as they fall into the prompt. */
+var burst=0,AN={1:[.50,.26],2:[.49,.33],3:[.50,.47],4:[.23,.33],5:[.51,.13],6:[.48,.12]};   /* where the light is in each chapter picture */
+function path(e,ox,oy,tx,ty,sway,bow){var mx=ox+(tx-ox)*.2+bow*W*.30,my=oy+(ty-oy)*.35;return[(1-e)*(1-e)*ox+2*(1-e)*e*mx+e*e*tx+sway,(1-e)*(1-e)*oy+2*(1-e)*e*my+e*e*ty]}
 function pour(t,cx,cy){
- capTick(t);
- if(capOn&&!still&&tgt&&(J||wait||(T&&!A.paused))){   /* the outpouring itself: light running from the Sphere's core down into the words */
-  for(var q=0;q<7;q++){var u=((t*.00055+q/7)%1),e=u*u*(3-2*u),bx=(1-e)*(1-e)*cx+2*(1-e)*e*(cx+(tgt.x-cx)*.2)+e*e*tgt.x,by=(1-e)*(1-e)*cy+2*(1-e)*e*(cy+(tgt.y-cy)*.55)+e*e*tgt.y;
-   g.globalAlpha=.25+.6*Math.sin(u*3.1416);g.fillStyle=J||wait?'#4fd1c5':'#e8c06a';g.beginPath();g.arc(bx,by,DPR*(1.2+1.4*Math.sin(u*3.1416)),0,6.283);g.fill()}g.globalAlpha=1}
- if(!capOn||!fly)return;var n=fly.w.length,gap=Math.min(90,600/n),done=true;g.font='600 '+(17*DPR)+'px system-ui,-apple-system,Segoe UI,Roboto,sans-serif';g.textAlign='center';
- for(var k=0;k<n;k++){var u=(t-fly.t0-k*gap)/700;if(u<0){done=false;continue}if(u>=1)continue;done=false;var e=u*u*(3-2*u),tx=fly.x+(k-(n-1)/2)*14*DPR,
-  bx=(1-e)*(1-e)*cx+2*(1-e)*e*(cx+(tx-cx)*.2)+e*e*tx,by=(1-e)*(1-e)*cy+2*(1-e)*e*(cy+(fly.y-cy)*.55)+e*e*fly.y;
-  g.globalAlpha=u<.75?1:(1-u)*4;g.fillStyle=J?'#9fe6dc':'#e8c06a';g.fillText(fly.w[k],bx,by)}
- g.globalAlpha=1;g.textAlign='start';if(done)fly=null}
+ capTick(t);var R=Math.min(W,H)*.2,col=(J||wait)?'79,209,197':'232,192,106',ox=cx,oy=cy,el=$('pA');
+ if(+el.style.opacity>.35&&AN[el.dataset.n]){var rc=el.getBoundingClientRect(),an=AN[el.dataset.n];ox=(rc.left+rc.width*an[0])*DPR;oy=(rc.top+rc.height*an[1])*DPR}   /* pour from the picture's own light */
+ if(burst){var a=(t-burst)/1000;if(a<1){fx.strokeStyle='rgba('+col+','+(.6*(1-a)).toFixed(3)+')';fx.lineWidth=DPR*(2.4-1.8*a);fx.beginPath();fx.arc(ox,oy,DPR*8+R*.85*a,0,6.283);fx.stroke();
+   fx.strokeStyle='rgba('+col+','+(.3*(1-a)).toFixed(3)+')';fx.lineWidth=DPR;fx.beginPath();fx.arc(ox,oy,DPR*8+R*1.35*a,0,6.283);fx.stroke()}else burst=0}
+ if(capOn&&!still&&tgt&&(J||wait||(T&&!A.paused))){
+  for(var s=0;s<5;s++){var bow=(s-2)/2;fx.beginPath();for(var q=0;q<=30;q++){var u=q/30,sw=Math.sin(u*3.1416)*W*.03*Math.sin(t*.0011+s*2.1+u*5.2),p=path(u,ox,oy,tgt.x,tgt.y,sw,bow);if(q)fx.lineTo(p[0],p[1]);else fx.moveTo(p[0],p[1])}
+   var gr=fx.createLinearGradient(ox,oy,tgt.x,tgt.y);gr.addColorStop(0,'rgba('+col+',.05)');gr.addColorStop(.3,'rgba('+col+','+(s==2?.5:.3)+')');gr.addColorStop(.85,'rgba('+col+',.2)');gr.addColorStop(1,'rgba('+col+',0)');
+   fx.strokeStyle=gr;fx.lineWidth=DPR*(s==2?1.8:1);fx.stroke()}
+  for(var q=0;q<30;q++){var s2=q%5,bow=(s2-2)/2,u=((t*.00036*(1+.22*(q%4))+q/30)%1),sw=Math.sin(u*3.1416)*W*.03*Math.sin(t*.0011+s2*2.1+u*5.2),p=path(u,ox,oy,tgt.x,tgt.y,sw,bow),z=Math.sin(u*3.1416);
+   fx.globalAlpha=.25+.75*z;fx.fillStyle=q%6?'rgb('+col+')':'#ffffff';fx.beginPath();fx.arc(p[0],p[1],DPR*(.7+1.7*z),0,6.283);fx.fill()}
+  fx.globalAlpha=1}
+ if(!capOn||!fly)return;var n=fly.w.length,gap=Math.min(95,700/n),done=true;fx.textAlign='center';fx.shadowColor='rgba('+col+',.95)';
+ for(var k=0;k<n;k++){var u=(t-fly.t0-k*gap)/900;if(u<0){done=false;continue}if(u>=1)continue;done=false;var e=u*u*(3-2*u),tx=fly.x+(k-(n-1)/2)*15*DPR,
+  sw=Math.sin(u*3.1416)*W*.02*Math.sin(k*1.7+t*.002),p=path(e,ox,oy,tx,fly.y,sw,((k%5)-2)*.42);
+  fx.font='600 '+((8+10*e)*DPR).toFixed(1)+'px system-ui,-apple-system,Segoe UI,Roboto,sans-serif';fx.shadowBlur=DPR*(16-9*e);
+  fx.globalAlpha=u<.12?u/.12:u<.8?1:(1-u)/.2;fx.fillStyle=J?'#b5efe6':'#f6dc96';fx.fillText(fly.w[k],p[0],p[1])}
+ fx.shadowBlur=0;fx.globalAlpha=1;fx.textAlign='start';if(done)fly=null}
 /* ---------- movement art: void -> emerge -> hold -> dissolve -> between -> next ---------- */
 function setPlate(el,n,amt){if(!n){el.style.opacity=0;return}var u='art/movement_'+String(n).padStart(2,'0')+'.jpg';if(el.dataset.n!=n){el.dataset.n=n;el.style.backgroundImage='url('+u+')'}
  el.style.opacity=(amt*.92).toFixed(3);el.style.filter='blur('+((1-amt)*22).toFixed(1)+'px) brightness('+(.25+.75*amt).toFixed(2)+')';
@@ -142,7 +166,7 @@ fetch('manifest.json',{cache:'no-cache'}).then(function(r){return r.json()}).the
  CH.forEach(function(c,i){var mvk=c.next?0:c.movement;if(mvk&&mvk!==last){var h=document.createElement('div');h.className='mvh';h.textContent=m.movements[mvk];$('list').appendChild(h);last=mvk}
   var b=document.createElement('button');b.className='ch';b.dataset.i=i;b.innerHTML='<b>'+c.chapter+'</b><span>'+c.title+'</span>';
   b.onclick=function(){$('sheet').classList.remove('open');$('start').style.display='none';load(i,0,true)};$('list').appendChild(b)});
- var s=null;try{s=JSON.parse(localStorage.getItem(K))}catch(e){}if(s&&s.i>=0)load(s.i,s.t,false)});
+ var s=null;try{s=JSON.parse(localStorage.getItem(K))}catch(e){}if(s&&s.i>=0)load(s.i,s.t,false)}).catch(function(){$('start').style.display='none';$('now').innerHTML='Genesis<small>This copy cannot load its chapters</small>';$('cap').textContent='Open timothyweakly.github.io/genesis or scan the Genesis QR.'});
 $('start').onclick=function(){$('start').style.display='none';if(idx<0)load(0,0,true);else A.play()};
 $('play').onclick=function(){$('start').style.display='none';if(idx<0){load(0,0,true);return}A.paused?A.play():A.pause()};
 A.onplay=function(){$('play').innerHTML='&#10074;&#10074;'};A.onpause=function(){$('play').innerHTML='&#9654;';save()};
@@ -156,29 +180,33 @@ $('listBtn').onclick=function(){$('sheet').classList.add('open')};$('close').onc
 if('mediaSession' in navigator){var ms=navigator.mediaSession;ms.setActionHandler('play',function(){A.play()});ms.setActionHandler('pause',function(){A.pause()});
  ms.setActionHandler('previoustrack',function(){$('prev').onclick()});ms.setActionHandler('nexttrack',function(){$('next').onclick()})}
 setCap();$('cc').onclick=function(){capOn=!capOn;try{localStorage.setItem(K+'_cc',capOn?'1':'0')}catch(e){}setCap()};
-/* ---------- Ask Genesis Jedidiah: optional. Listening never depends on it. It is offered only when the manifest names a
-   public ask service (manifest.ask_url); the laptop is never contacted directly from this page. ---------- */
+/* ---------- The prompt. The Sphere pours the words into it; tap it and it becomes the place to ask Jedidiah.
+   Asking is optional and listening never depends on it. Jedidiah is reached only when the manifest names where he can be
+   reached (manifest.ask_url). When he cannot be reached the prompt says so plainly and nothing is made up. ---------- */
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 var lastA='';
-function away(msg){return '<p>'+msg+'</p><p class="q">Listening and reading work without him. When Jedidiah is here he answers only from the text of the chapter you are hearing, and shows the chapter’s own words he relies on.</p>'}
 function timed(url,opt,ms){var c=new AbortController(),k=setTimeout(function(){c.abort()},ms);opt.signal=c.signal;return fetch(url,opt).finally(function(){clearTimeout(k)})}
-$('ask').onclick=function(){var b=$('askb'),c=idx>=0?CH[idx]:null;$('askp').classList.add('open');
- if(!M||!M.ask_url){b.innerHTML=away('Jedidiah cannot be reached from this page yet.');return}
- if(!c){b.innerHTML='<p>Choose a chapter first, so Jedidiah knows which text you are asking about.</p>';return}
- b.innerHTML='<p class="q">Looking for Jedidiah…</p>';
- timed(M.ask_url.replace(/ask$/,'health'),{},6000).then(function(r){return r.json()}).then(function(h){
-  b.innerHTML='<p class="q">Genesis '+c.chapter+' · '+esc(c.title)+(h.busy?' · Jedidiah is busy; your question may wait a little':'')+'</p><textarea id="askq" maxlength="600" placeholder="Ask Jedidiah about this chapter"></textarea><br><button id="asks">Ask Jedidiah</button><div id="aska">'+lastA+'</div>';
-  $('asks').onclick=function(){var q=$('askq').value.trim();if(!q)return;var t0=Date.now(),was=!A.paused;A.pause();wait=true;launch('',performance.now());
-   $('asks').disabled=true;var tick=setInterval(function(){$('aska').innerHTML='<p class="q">Jedidiah is reading Genesis '+c.chapter+'… '+Math.round((Date.now()-t0)/1000)+' s</p>'},1000);
-   timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',chapter:c.chapter,question:q})},240000)
-   .then(function(r){return r.json()}).then(function(j){clearInterval(tick);wait=false;
-    var h='<p>'+esc(j.answer||'')+'</p>',parts=(j.answer||'').match(/[^.!?]+[.!?]+["”']?|[^.!?]+$/g)||[];parts=parts.map(function(s){return s.trim()}).filter(Boolean);
-    (j.claims||[]).forEach(function(k){h+='<p class="q">“'+esc(k.quote)+'” — Genesis '+esc(k.chapter)+'</p>';parts.push('“'+k.quote+'” — Genesis '+k.chapter)});
-    (j.unknowns||[]).forEach(function(u){h+='<p class="q">Unknown: '+esc(u)+'</p>';parts.push('Unknown: '+u)});
-    lastA='<p class="q">You asked: '+esc(q)+'</p>'+h;$('aska').innerHTML=lastA;$('asks').disabled=false;
-    if(parts.length){$('askp').classList.remove('open');speak(parts,was)}else if(was)A.play().catch(function(){})})
-   .catch(function(){clearInterval(tick);wait=false;$('asks').disabled=false;$('aska').innerHTML='<p class="q">Jedidiah did not answer this time. Nothing was made up in his place.</p>';if(was)A.play().catch(function(){})})}})
- .catch(function(){b.innerHTML=away('Jedidiah is not reachable right now.')})};
+function askMode(on){$('askf').hidden=!on;$('cap').style.display=on?'none':'flex';$('prompt').classList.toggle('asking',on);if(on)$('askq').focus()}
+function note(s){$('cap').textContent=s}
+$('prompt').onclick=function(e){if(e.target.closest&&e.target.closest('#askf'))return;if(J||wait)return;askMode($('askf').hidden)};
+$('prompt').onkeydown=function(e){if(e.target===$('prompt')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();$('prompt').onclick(e)}};
+$('askf').onsubmit=function(e){e.preventDefault();var q=$('askq').value.trim(),c=idx>=0?CH[idx]:null;if(!q)return;$('askq').value='';$('askq').blur();askMode(false);
+ var was=!A.paused;
+ if(!c){speak(['Choose a chapter first, so Jedidiah knows which text you are asking about.'],was);return}
+ if(!M||!M.ask_url){A.pause();speak(['Jedidiah cannot be reached from this page yet.','Listening works without him.'],was);return}
+ A.pause();wait=true;$('prompt').classList.add('asking');launch('',performance.now());note('Looking for Jedidiah…');var t0=Date.now(),tick=null;
+ function fail(){clearInterval(tick);wait=false;$('prompt').classList.remove('asking');speak(['Jedidiah is not reachable right now.','Nothing was made up in his place.'],was)}
+ timed(M.ask_url.replace(/ask$/,'health'),{},7000).then(function(r){return r.json()}).then(function(){
+  tick=setInterval(function(){note('Jedidiah is reading Genesis '+c.chapter+'… '+Math.round((Date.now()-t0)/1000)+' s')},1000);
+  return timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',chapter:c.chapter,question:q})},240000)})
+ .then(function(r){return r.json()}).then(function(j){clearInterval(tick);wait=false;$('prompt').classList.remove('asking');
+  var h='<p>'+esc(j.answer||'')+'</p>',parts=(j.answer||'').match(/[^.!?]+[.!?]+["”']?|[^.!?]+$/g)||[];parts=parts.map(function(s){return s.trim()}).filter(Boolean);
+  (j.claims||[]).forEach(function(k){h+='<p class="q">“'+esc(k.quote)+'” — Genesis '+esc(k.chapter)+'</p>';parts.push('“'+k.quote+'” — Genesis '+k.chapter)});
+  (j.unknowns||[]).forEach(function(u){h+='<p class="q">Unknown: '+esc(u)+'</p>';parts.push('Unknown: '+u)});
+  lastA='<p class="q">You asked: '+esc(q)+'</p>'+h;$('ask').hidden=false;
+  if(parts.length)speak(parts,was);else fail()})
+ .catch(fail)};
+$('ask').onclick=function(){$('askb').innerHTML=lastA;$('askp').classList.add('open')};
 $('askx').onclick=function(){$('askp').classList.remove('open')};
 setInterval(function(){capTick(performance.now())},250);   /* the words keep time even when the picture is not being drawn, and while the narration waits for Jedidiah */
 requestAnimationFrame(draw);

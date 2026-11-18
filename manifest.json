@@ -222,28 +222,32 @@
    "title": "The Cup of the Dream",
    "file": "audio/genesis_28.mp3?v=2a9d4160",
    "movement": 5,
-   "next": null
+   "next": null,
+   "text": "text/genesis_28.json?v=e39f40a1"
   },
   {
    "chapter": 29,
    "title": "The Cup of Labor",
    "file": "audio/genesis_29.mp3?v=6e9f7292",
    "movement": 5,
-   "next": null
+   "next": null,
+   "text": "text/genesis_29.json?v=431d98f5"
   },
   {
    "chapter": 30,
    "title": "The Cup of the Mandrakes",
    "file": "audio/genesis_30.mp3?v=3b73cfe8",
    "movement": 5,
-   "next": null
+   "next": null,
+   "text": "text/genesis_30.json?v=1b39055c"
   },
   {
    "chapter": 31,
    "title": "The Cup of the Return",
    "file": "audio/genesis_31.mp3?v=b0996efa",
    "movement": 5,
-   "next": null
+   "next": null,
+   "text": "text/genesis_31.json?v=d5c627be"
   },
   {
    "chapter": 32,
