@@ -4,42 +4,42 @@
   {
    "chapter": 1,
    "title": "The Cup of Creation",
-   "file": "audio/genesis_01.mp3",
+   "file": "audio/genesis_01.mp3?v=2",
    "movement": 1,
    "next": null
   },
   {
    "chapter": 2,
    "title": "The Cup At Rest",
-   "file": "audio/genesis_02.mp3",
+   "file": "audio/genesis_02.mp3?v=2",
    "movement": 1,
    "next": null
   },
   {
    "chapter": 3,
    "title": "The Cup Drained",
-   "file": "audio/genesis_03.mp3",
+   "file": "audio/genesis_03.mp3?v=2",
    "movement": 2,
    "next": null
   },
   {
    "chapter": 4,
    "title": "The Cup Rejected",
-   "file": "audio/genesis_04.mp3",
+   "file": "audio/genesis_04.mp3?v=2",
    "movement": 2,
    "next": 3
   },
   {
    "chapter": 5,
    "title": "The Cup Passed Down",
-   "file": "audio/genesis_05.mp3",
+   "file": "audio/genesis_05.mp3?v=2",
    "movement": 2,
    "next": 3
   },
   {
    "chapter": 6,
    "title": "The Cup Overflows",
-   "file": "audio/genesis_06.mp3",
+   "file": "audio/genesis_06.mp3?v=2",
    "movement": 3,
    "next": null
   },
@@ -95,7 +95,7 @@
   {
    "chapter": 14,
    "title": "The Cup of War and Blessing",
-   "file": "audio/genesis_14.mp3",
+   "file": "audio/genesis_14.mp3?v=2",
    "movement": 4,
    "next": null
   },
@@ -151,7 +151,7 @@
   {
    "chapter": 22,
    "title": "The Cup of Testing",
-   "file": "audio/genesis_22.mp3",
+   "file": "audio/genesis_22.mp3?v=2",
    "movement": 4,
    "next": null
   },
@@ -347,7 +347,7 @@
   {
    "chapter": 50,
    "title": "The Cup of Waiting (final)",
-   "file": "audio/genesis_50.mp3",
+   "file": "audio/genesis_50.mp3?v=2",
    "movement": 6,
    "next": null
   }
