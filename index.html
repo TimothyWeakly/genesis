@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Genesis · Logos Field</title>
+<meta name="description" content="Listen to Genesis 1–50 inside Logos Field.">
+<meta name="theme-color" content="#030305">
+<style>
+:root{--gold:#e8c06a;--teal:#4fd1c5;--text:#efe6d2;--dim:#9a8f78;--bg:#030305}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
+#field{position:fixed;inset:0;width:100%;height:100%}
+.plate{position:fixed;left:50%;top:44%;width:min(78vw,52vh);aspect-ratio:3/4;transform:translate(-50%,-50%) scale(1.08);
+ background-size:cover;background-position:center;border-radius:6px;opacity:0;pointer-events:none;
+ mask-image:radial-gradient(ellipse 72% 70% at 50% 50%,#000 55%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 72% 70% at 50% 50%,#000 55%,transparent 100%);
+ will-change:opacity,filter,transform}
+#mv{position:fixed;left:0;right:0;top:calc(10px + env(safe-area-inset-top));text-align:center;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);opacity:.85;transition:opacity 2s}
+.bar{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,#030305ee 30%)}
+.wrap{max-width:560px;margin:0 auto}
+.now{text-align:center;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now small{display:block;color:var(--dim);font-weight:400;font-size:13px}
+.seek{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+input[type=range]{flex:1;accent-color:var(--gold);height:28px}
+.ctl{display:flex;justify-content:center;gap:16px;align-items:center}
+.ctl button{background:none;border:0;color:var(--text);font-size:22px;width:50px;height:50px;border-radius:25px;cursor:pointer}
+.ctl .play{background:var(--gold);color:#140c02;font-size:24px;box-shadow:0 0 28px #e8c06a55}
+#listBtn{font-size:20px}
+#sheet{position:fixed;inset:0;background:#030305f2;overflow:auto;padding:calc(18px + env(safe-area-inset-top)) 16px 40px;transform:translateY(100%);transition:transform .4s ease}
+#sheet.open{transform:none}
+#sheet h2{margin:0 0 10px;text-align:center;color:var(--gold);letter-spacing:.2em;font-size:18px}
+#sheet .close{position:fixed;right:14px;top:calc(10px + env(safe-area-inset-top));background:none;border:0;color:var(--text);font-size:26px}
+.mvh{max-width:560px;margin:18px auto 4px;color:var(--teal);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.ch{max-width:560px;margin:4px auto;display:flex;gap:12px;align-items:center;width:100%;background:#0d0c0a;border:1px solid #221d14;border-radius:10px;padding:10px 12px;color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.ch b{min-width:30px;height:30px;border-radius:15px;display:grid;place-items:center;background:#1d170d;color:var(--gold);font-size:13px}
+.ch.on{border-color:var(--gold)}
+#start{position:fixed;inset:0;display:grid;place-items:center;background:transparent;border:0;color:var(--text);cursor:pointer}
+#start span{padding:14px 26px;border:1px solid #e8c06a66;border-radius:30px;letter-spacing:.24em;font-size:14px;background:#03030599;box-shadow:0 0 40px #e8c06a22}
+</style>
+</head>
+<body>
+<canvas id="field"></canvas>
+<div class="plate" id="pA"></div><div class="plate" id="pB"></div>
+<div id="mv"></div>
+<button id="start" aria-label="Enter and listen"><span>ENTER · GENESIS</span></button>
+<div class="bar"><div class="wrap">
+ <div class="now" id="now">Genesis</div>
+ <div class="seek"><span id="cur">0:00</span><input id="seek" type="range" min="0" max="1000" value="0" aria-label="Seek"><span id="dur">0:00</span></div>
+ <div class="ctl"><button id="prev" aria-label="Previous chapter">&#9198;</button><button id="back" aria-label="Back 15 seconds">&#8634;</button>
+  <button id="play" class="play" aria-label="Play">&#9654;</button><button id="fwd" aria-label="Forward 15 seconds">&#8635;</button><button id="next" aria-label="Next chapter">&#9197;</button>
+  <button id="listBtn" aria-label="Chapters">&#9776;</button></div>
+</div></div>
+<div id="sheet"><button class="close" id="close" aria-label="Close">&times;</button><h2>GENESIS</h2><div id="list"></div></div>
+<audio id="a" preload="metadata"></audio>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},A=$('a'),M,CH=[],idx=-1,K='genesis_logos_field_v1';
+function fmt(s){s=Math.max(0,Math.floor(s||0));var m=Math.floor(s/60),x=s%60;return m+':'+String(x).padStart(2,'0')}
+/* ---------- the field: stars streaming toward a far dark sphere with a gold/teal rim ---------- */
+var cv=$('field'),g=cv.getContext('2d'),W,H,DPR=Math.min(2,window.devicePixelRatio||1),S=[];
+function size(){W=cv.width=innerWidth*DPR;H=cv.height=innerHeight*DPR}size();addEventListener('resize',size);
+for(var i=0;i<520;i++)S.push({a:Math.random()*6.283,r:Math.random(),s:.15+Math.random()*.85,h:Math.random()<.18});
+var glow=0;
+function draw(t){
+ var cx=W/2,cy=H*.44,R=Math.min(W,H)*.2;g.fillStyle='#030305';g.fillRect(0,0,W,H);
+ for(var i=0;i<S.length;i++){var p=S[i];p.r-=.0006*p.s*(A.paused?.35:1);if(p.r<.02){p.r=1;p.a=Math.random()*6.283}
+  var d=R*.9+p.r*Math.max(W,H)*.75,x=cx+Math.cos(p.a+t*.00002)*d,y=cy+Math.sin(p.a+t*.00002)*d*.62;
+  g.globalAlpha=Math.min(1,p.r*1.6)*.8;g.fillStyle=p.h?'#e8c06a':'#cfd8ff';g.fillRect(x,y,DPR*p.s*1.4,DPR*p.s*1.4)}
+ g.globalAlpha=1;var gr=g.createRadialGradient(cx,cy,R*.6,cx,cy,R*1.5);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(.42,'rgba(232,192,106,'+(.10+glow*.12)+')');
+ gr.addColorStop(.55,'rgba(79,209,197,.05)');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.beginPath();g.arc(cx,cy,R*1.5,0,6.283);g.fill();
+ g.fillStyle='#010102';g.beginPath();g.arc(cx,cy,R,0,6.283);g.fill();
+ g.strokeStyle='rgba(232,192,106,'+(.55+.25*Math.sin(t*.0007))+')';g.lineWidth=DPR*1.2;g.beginPath();g.arc(cx,cy,R,0,6.283);g.stroke();
+ g.strokeStyle='rgba(79,209,197,.25)';g.lineWidth=DPR*.8;g.beginPath();g.arc(cx,cy,R*1.012,0,6.283);g.stroke();
+ g.fillStyle='rgba(255,226,150,.95)';g.beginPath();g.arc(cx,H*.86,DPR*1.6,0,6.283);g.fill();          /* the far point of light */
+ visual();requestAnimationFrame(draw)}
+/* ---------- movement art: void -> emerge -> hold -> dissolve -> between -> next ---------- */
+function setPlate(el,n,amt){if(!n){el.style.opacity=0;return}var u='art/movement_'+String(n).padStart(2,'0')+'.jpg';if(el.dataset.n!=n){el.dataset.n=n;el.style.backgroundImage='url('+u+')'}
+ el.style.opacity=(amt*.92).toFixed(3);el.style.filter='blur('+((1-amt)*22).toFixed(1)+'px) brightness('+(.25+.75*amt).toFixed(2)+')';
+ el.style.transform='translate(-50%,-50%) scale('+(1.18-.1*amt).toFixed(3)+')'}
+function visual(){
+ if(idx<0||!CH.length){setPlate($('pA'),0,0);setPlate($('pB'),0,0);return}
+ var c=CH[idx],f=A.duration?A.currentTime/A.duration:0;
+ if(c.next){setPlate($('pA'),c.movement,Math.max(0,.55*(1-f)));setPlate($('pB'),c.next,Math.max(0,f*f*.7));glow=.3;return}
+ var grp=CH.filter(function(x){return x.movement===c.movement&&!x.next}),k=grp.indexOf(c),P=(k+f)/grp.length,amt;
+ amt=P<.18?P/.18:P>.85?(1-P)/.15*.8+.2:1; amt=Math.max(0,Math.min(1,amt));
+ setPlate($('pA'),c.movement,amt);setPlate($('pB'),0,0);glow=amt}
+/* ---------- listening ---------- */
+function save(){try{localStorage.setItem(K,JSON.stringify({i:idx,t:A.currentTime}))}catch(e){}}
+function mark(){Array.prototype.forEach.call(document.querySelectorAll('.ch'),function(b){b.classList.toggle('on',+b.dataset.i===idx)})}
+function load(i,t,auto){if(i<0||i>=CH.length)return;idx=i;var c=CH[i];A.src=c.file;
+ $('now').innerHTML='Genesis '+c.chapter+'<small>'+c.title+'</small>';$('mv').textContent=M.movements[c.next?c.next:c.movement];mark();
+ A.onloadedmetadata=function(){if(t)A.currentTime=Math.min(t,A.duration-1);$('dur').textContent=fmt(A.duration)};
+ if(auto)A.play().catch(function(){});save();
+ if('mediaSession' in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:'Genesis '+c.chapter+' — '+c.title,album:'Genesis · Logos Field',artwork:[{src:'art/movement_'+String(c.movement).padStart(2,'0')+'.jpg',sizes:'900x1200',type:'image/jpeg'}]})}
+fetch('manifest.json',{cache:'no-cache'}).then(function(r){return r.json()}).then(function(m){M=m;CH=m.chapters;var last=0;
+ CH.forEach(function(c,i){var mvk=c.next?0:c.movement;if(mvk&&mvk!==last){var h=document.createElement('div');h.className='mvh';h.textContent=m.movements[mvk];$('list').appendChild(h);last=mvk}
+  var b=document.createElement('button');b.className='ch';b.dataset.i=i;b.innerHTML='<b>'+c.chapter+'</b><span>'+c.title+'</span>';
+  b.onclick=function(){$('sheet').classList.remove('open');$('start').style.display='none';load(i,0,true)};$('list').appendChild(b)});
+ var s=null;try{s=JSON.parse(localStorage.getItem(K))}catch(e){}if(s&&s.i>=0)load(s.i,s.t,false)});
+$('start').onclick=function(){$('start').style.display='none';if(idx<0)load(0,0,true);else A.play()};
+$('play').onclick=function(){$('start').style.display='none';if(idx<0){load(0,0,true);return}A.paused?A.play():A.pause()};
+A.onplay=function(){$('play').innerHTML='&#10074;&#10074;'};A.onpause=function(){$('play').innerHTML='&#9654;';save()};
+A.ontimeupdate=function(){if(A.duration){$('seek').value=Math.round(A.currentTime/A.duration*1000);$('cur').textContent=fmt(A.currentTime)}if(Math.floor(A.currentTime)%5===0)save()};
+A.onended=function(){if(idx<CH.length-1)load(idx+1,0,true)};
+$('seek').oninput=function(){if(A.duration)A.currentTime=$('seek').value/1000*A.duration};
+$('prev').onclick=function(){if(A.currentTime>5)A.currentTime=0;else load(Math.max(0,idx-1),0,true)};
+$('next').onclick=function(){load(Math.min(CH.length-1,idx+1),0,true)};
+$('back').onclick=function(){A.currentTime=Math.max(0,A.currentTime-15)};$('fwd').onclick=function(){A.currentTime=Math.min(A.duration||0,A.currentTime+15)};
+$('listBtn').onclick=function(){$('sheet').classList.add('open')};$('close').onclick=function(){$('sheet').classList.remove('open')};
+if('mediaSession' in navigator){var ms=navigator.mediaSession;ms.setActionHandler('play',function(){A.play()});ms.setActionHandler('pause',function(){A.pause()});
+ ms.setActionHandler('previoustrack',function(){$('prev').onclick()});ms.setActionHandler('nexttrack',function(){$('next').onclick()})}
+requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
