@@ -4,147 +4,147 @@
   {
    "chapter": 1,
    "title": "The Cup of Creation",
-   "file": "audio/genesis_01.mp3?v=2",
+   "file": "audio/genesis_01.mp3?v=ab33fc07",
    "movement": 1,
    "next": null
   },
   {
    "chapter": 2,
    "title": "The Cup At Rest",
-   "file": "audio/genesis_02.mp3?v=2",
+   "file": "audio/genesis_02.mp3?v=5de3be6b",
    "movement": 1,
    "next": null
   },
   {
    "chapter": 3,
    "title": "The Cup Drained",
-   "file": "audio/genesis_03.mp3?v=2",
+   "file": "audio/genesis_03.mp3?v=0300fcf2",
    "movement": 2,
    "next": null
   },
   {
    "chapter": 4,
    "title": "The Cup Rejected",
-   "file": "audio/genesis_04.mp3?v=2",
+   "file": "audio/genesis_04.mp3?v=c7d4cc08",
    "movement": 2,
    "next": 3
   },
   {
    "chapter": 5,
    "title": "The Cup Passed Down",
-   "file": "audio/genesis_05.mp3?v=2",
+   "file": "audio/genesis_05.mp3?v=a38340f0",
    "movement": 2,
    "next": 3
   },
   {
    "chapter": 6,
    "title": "The Cup Overflows",
-   "file": "audio/genesis_06.mp3?v=2",
+   "file": "audio/genesis_06.mp3?v=67c8c2ee",
    "movement": 3,
    "next": null
   },
   {
    "chapter": 7,
    "title": "The Cup Poured Out",
-   "file": "audio/genesis_07.mp3",
+   "file": "audio/genesis_07.mp3?v=838884af",
    "movement": 3,
    "next": null
   },
   {
    "chapter": 8,
    "title": "The Cup Recedes",
-   "file": "audio/genesis_08.mp3",
+   "file": "audio/genesis_08.mp3?v=f54a0d2e",
    "movement": 3,
    "next": null
   },
   {
    "chapter": 9,
    "title": "The Cup Sealed",
-   "file": "audio/genesis_09.mp3",
+   "file": "audio/genesis_09.mp3?v=399c17a8",
    "movement": 3,
    "next": null
   },
   {
    "chapter": 10,
    "title": "The Cup Divides",
-   "file": "audio/genesis_10.mp3",
+   "file": "audio/genesis_10.mp3?v=c644d92b",
    "movement": 3,
    "next": 4
   },
   {
    "chapter": 11,
    "title": "The Cup Scattered",
-   "file": "audio/genesis_11.mp3",
+   "file": "audio/genesis_11.mp3?v=0b6b90ff",
    "movement": 3,
    "next": 4
   },
   {
    "chapter": 12,
    "title": "The Cup of Calling",
-   "file": "audio/genesis_12.mp3",
+   "file": "audio/genesis_12.mp3?v=1eabe25f",
    "movement": 4,
    "next": null
   },
   {
    "chapter": 13,
    "title": "The Cup Shared",
-   "file": "audio/genesis_13.mp3",
+   "file": "audio/genesis_13.mp3?v=2dc76a3b",
    "movement": 4,
    "next": null
   },
   {
    "chapter": 14,
    "title": "The Cup of War and Blessing",
-   "file": "audio/genesis_14.mp3?v=2",
+   "file": "audio/genesis_14.mp3?v=c5fe78bc",
    "movement": 4,
    "next": null
   },
   {
    "chapter": 15,
    "title": "The Cup Cut",
-   "file": "audio/genesis_15.mp3",
+   "file": "audio/genesis_15.mp3?v=6e160069",
    "movement": 4,
    "next": null
   },
   {
    "chapter": 16,
    "title": "The Cup of Arrangement",
-   "file": "audio/genesis_16.mp3",
+   "file": "audio/genesis_16.mp3?v=5cf092ca",
    "movement": 4,
    "next": null
   },
   {
    "chapter": 17,
    "title": "The Cup Sealed in Flesh",
-   "file": "audio/genesis_17.mp3",
+   "file": "audio/genesis_17.mp3?v=567abdb1",
    "movement": 4,
    "next": null
   },
   {
    "chapter": 18,
    "title": "The Cup of Hospitality",
-   "file": "audio/genesis_18.mp3",
+   "file": "audio/genesis_18.mp3?v=50418c2f",
    "movement": 4,
    "next": null
   },
   {
    "chapter": 19,
    "title": "The Cup of Fire",
-   "file": "audio/genesis_19.mp3",
+   "file": "audio/genesis_19.mp3?v=e5dae9d7",
    "movement": 4,
    "next": null
   },
   {
    "chapter": 20,
    "title": "The Cup Repeated",
-   "file": "audio/genesis_20.mp3",
+   "file": "audio/genesis_20.mp3?v=d868ad0a",
    "movement": 4,
    "next": null
   },
   {
    "chapter": 21,
    "title": "The Cup of Laughter",
-   "file": "audio/genesis_21.mp3",
+   "file": "audio/genesis_21.mp3?v=cfd7dbaf",
    "movement": 4,
    "next": null
   },
@@ -347,7 +347,7 @@
   {
    "chapter": 50,
    "title": "The Cup of Waiting (final)",
-   "file": "audio/genesis_50.mp3?v=2",
+   "file": "audio/genesis_50.mp3?v=07929543",
    "movement": 6,
    "next": null
   }
