@@ -108,7 +108,7 @@ function setCap(){var b=$('cc');b.classList.toggle('on',capOn);b.textContent=cap
 function loadText(i){T=null;pi=-1;fly=null;$('cap').textContent='';$('capsrc').textContent='';var c=CH[i];if(!c.text)return;
  fetch(c.text).then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&idx===i)T=j}).catch(function(){})}
 function launch(text,t){var r=$('cap').getBoundingClientRect();tgt={x:(r.left+r.width/2)*DPR,y:(r.top+r.height*.35)*DPR};
- if(capOn&&!still&&!document.hidden){burst=t;$('prompt').classList.add('pour');setTimeout(function(){$('prompt').classList.remove('pour')},760);fly={w:text.split(' '),t0:t,x:tgt.x,y:tgt.y};$('cap').style.opacity=.25;setTimeout(function(){$('cap').style.opacity=1},520)}}
+ if(capOn&&!still&&!document.hidden){burst=t;$('prompt').classList.add('pour');setTimeout(function(){$('prompt').classList.remove('pour')},760);fly={w:text.split(' '),t0:t,x:tgt.x,y:tgt.y};$('cap').style.opacity=0;var n=fly.w.length,me=fly;setTimeout(function(){if(fly===me||!fly)$('cap').style.opacity=1},900+(n-1)*Math.min(95,700/n)+60)}}   /* the line stays empty until the flying words have landed, so words never fly into words */
 /* Jedidiah answering: the narration waits, and the Sphere pours his answer the same way it pours the chapter, one sentence at a
    time, with the chapter's own words he relies on shown in quotation marks. Then the narration goes on. */
 var J=null,tgt=null;
@@ -142,7 +142,7 @@ function pour(t,cx,cy){
   sw=Math.sin(u*3.1416)*W*.02*Math.sin(k*1.7+t*.002),p=path(e,ox,oy,tx,fly.y,sw,((k%5)-2)*.42);
   fx.font='600 '+((8+10*e)*DPR).toFixed(1)+'px system-ui,-apple-system,Segoe UI,Roboto,sans-serif';fx.shadowBlur=DPR*(16-9*e);
   fx.globalAlpha=u<.12?u/.12:u<.8?1:(1-u)/.2;fx.fillStyle=J?'#b5efe6':'#f6dc96';fx.fillText(fly.w[k],p[0],p[1])}
- fx.shadowBlur=0;fx.globalAlpha=1;fx.textAlign='start';if(done)fly=null}
+ fx.shadowBlur=0;fx.globalAlpha=1;fx.textAlign='start';if(done){fly=null;$('cap').style.opacity=1}}
 /* ---------- movement art: void -> emerge -> hold -> dissolve -> between -> next ---------- */
 function setPlate(el,n,amt){if(!n){el.style.opacity=0;return}var u='art/movement_'+String(n).padStart(2,'0')+'.jpg';if(el.dataset.n!=n){el.dataset.n=n;el.style.backgroundImage='url('+u+')'}
  el.style.opacity=(amt*.92).toFixed(3);el.style.filter='blur('+((1-amt)*22).toFixed(1)+'px) brightness('+(.25+.75*amt).toFixed(2)+')';
@@ -166,7 +166,7 @@ fetch('manifest.json',{cache:'no-cache'}).then(function(r){return r.json()}).the
  CH.forEach(function(c,i){var mvk=c.next?0:c.movement;if(mvk&&mvk!==last){var h=document.createElement('div');h.className='mvh';h.textContent=m.movements[mvk];$('list').appendChild(h);last=mvk}
   var b=document.createElement('button');b.className='ch';b.dataset.i=i;b.innerHTML='<b>'+c.chapter+'</b><span>'+c.title+'</span>';
   b.onclick=function(){$('sheet').classList.remove('open');$('start').style.display='none';load(i,0,true)};$('list').appendChild(b)});
- var s=null;try{s=JSON.parse(localStorage.getItem(K))}catch(e){}if(s&&s.i>=0)load(s.i,s.t,false)}).catch(function(){$('start').style.display='none';$('now').innerHTML='Genesis<small>This copy cannot load its chapters</small>';$('cap').textContent='Open timothyweakly.github.io/genesis or scan the Genesis QR.'});
+ /* entry is always Genesis 1 (founder, 20 Nov 2026); chapters stay one tap away in the list */}).catch(function(){$('start').style.display='none';$('now').innerHTML='Genesis<small>This copy cannot load its chapters</small>';$('cap').textContent='Open timothyweakly.github.io/genesis or scan the Genesis QR.'});
 $('start').onclick=function(){$('start').style.display='none';if(idx<0)load(0,0,true);else A.play()};
 $('play').onclick=function(){$('start').style.display='none';if(idx<0){load(0,0,true);return}A.paused?A.play():A.pause()};
 A.onplay=function(){$('play').innerHTML='&#10074;&#10074;'};A.onpause=function(){$('play').innerHTML='&#9654;';save()};
