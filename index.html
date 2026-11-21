@@ -36,6 +36,12 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 .ch.on{border-color:var(--gold)}
 #keep{max-width:560px;margin:0 auto 18px;display:flex;flex-direction:column;gap:8px;align-items:stretch}
 #keep button,#keep a{background:linear-gradient(160deg,#2a2111,#16110a);border:1px solid #7a6535;border-radius:12px;padding:12px;color:#fff4d6;font:inherit;text-align:center;text-decoration:none;box-shadow:0 0 22px rgba(232,192,106,.18);text-shadow:0 0 10px rgba(232,192,106,.5);cursor:pointer}
+#micway{position:fixed;left:16px;right:16px;top:22vh;z-index:30;background:#0b0a08f2;border:1px solid #7a6535;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;
+ box-shadow:0 0 40px rgba(232,192,106,.25);color:#f6ead0;text-align:center}
+#micway button{background:linear-gradient(160deg,#2a2111,#16110a);border:1px solid #7a6535;border-radius:12px;padding:12px;color:#fff4d6;font:inherit;cursor:pointer;
+ text-shadow:0 0 10px rgba(232,192,106,.5)}#micway small{display:block;margin-top:4px;font-size:11px;color:#d8c9ff}#micway .x{background:none;border:0;color:#a99b80}
+#safety{color:#d8c9ff;font-size:13px;line-height:1.45;border:1px solid #2a2418;border-radius:12px;padding:8px 12px}#safety summary{color:#fff4d6;cursor:pointer;padding:4px 0}
+#safety p{margin:8px 0}#safety b{color:#f6ead0}
 #keep small{color:#d8c9ff;text-align:center;font-size:12px;opacity:.8}
 .dl{display:block;max-width:560px;margin:-2px auto 8px;text-align:right;font-size:12px;letter-spacing:.08em;color:#d8c9ff;text-decoration:none;opacity:.75;text-shadow:0 0 8px rgba(214,170,255,.6)}
 #prompt{border:1px solid #3a3019;border-radius:16px;background:#0b0a08e6;padding:10px 14px;cursor:text;box-shadow:0 0 26px #e8c06a14;transition:border-color .3s}
@@ -97,7 +103,7 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
   if(j&&j.ok)return fetch(A,{method:'GET',cache:'no-store'}).then(function(r){if(r.ok&&/text\/html/.test(r.headers.get('content-type')||''))location.replace(A)})}).catch(function(){})})();
 /* ALWAYS THE NEWEST PAGE (founder 20 Nov 2026: "nothing has changed" - his phone kept an older saved copy for 10 minutes). On opening, the page
    asks the server for itself without any saved copy; if what is published differs from what is showing, it reloads once into the new one. */
-(function(){var BUILD='20261121-0055';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
+(function(){var BUILD='20261121-0120';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
  fetch(location.pathname+'?fresh='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
   var m=t.match(/var BUILD='([^']+)'/);if(!m||m[1]!==BUILD)location.replace(location.pathname+'?v='+Date.now())}).catch(function(){})})();
 (function(){
@@ -217,8 +223,19 @@ window.addEventListener('popstate',function(e){var open=$('sheet').classList.con
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 (function(){var box=document.createElement('div');box.id='keep';box.innerHTML='<button id="keepall">\u2913 Keep all of Genesis on this phone</button>'+
  '<small id="keepst">sphere, words and narration - opens without internet. Jedidiah is not in the kept copy: asking him needs internet.</small>'+
- '<a id="dlzip" href="https://github.com/TimothyWeakly/genesis/releases/download/narration-v1/AID_Genesis_Narration.zip">\u2913 Download all the narration (audio only, no Jedidiah, 256 MB)</a>';
+ '<a id="dlzip" href="https://github.com/TimothyWeakly/genesis/releases/download/narration-v1/AID_Genesis_Narration.zip">\u2913 Download all the narration (audio only, no Jedidiah, 256 MB)</a>'+
+ '<button id="micchange">\u2669 How Jedidiah hears you</button>'+
+ /* YOUR SAFETY HERE (founder 20 Nov 2026: "explain all the safety on the phone and permissions and all that") - plain, complete, no fine print */
+ '<details id="safety"><summary>Your safety on this page</summary>'+
+ '<p><b>Nothing about you is taken.</b> No sign-in, no account, no name, no tracking. The page does not know who you are.</p>'+
+ '<p><b>Permissions.</b> The only permission this page ever asks for is the microphone - and only when you tap the mic. If you never tap it, it never asks. You can take it back any time in your browser\u2019s site settings (the lock or dots beside the address).</p>'+
+ '<p><b>Your voice.</b> You choose: send it to Jedidiah\u2019s home (turned into words on the founder\u2019s own computer, then the recording is deleted), or use your phone\u2019s voice typing (Google on most Android phones, Apple on iPhone - then your words go to them, not to AID).</p>'+
+ '<p><b>Your questions.</b> When you ask Jedidiah, your question and his answer are kept, with the time and nothing else - no name, no phone, no place - so the founder can see where Jedidiah helps or fails and make him better.</p>'+
+ '<p><b>The heartbeat in the sphere</b> is the founder\u2019s own, shared by his choice. Nothing of your heart or body is read here.</p>'+
+ '<p><b>Keeping Genesis on your phone</b> stores it in your browser only. Clear it any time by clearing this site\u2019s data.</p>'+
+ '<p><b>Jedidiah</b> answers only from the Genesis text. He never judges you, never takes sides, and never claims to be more than a servant of the text.</p></details>';
  $('list').parentNode.insertBefore(box,$('list'));
+ $('micchange').onclick=function(){try{localStorage.removeItem('gen_mic_way')}catch(e){}overlayClose();setTimeout(function(){micChoose(function(){speak(['Done. Tap the mic when you want to speak.'],!A.paused)})},350)};
  $('keepall').onclick=function(){if(!('caches' in window)){$('keepst').textContent='This phone cannot keep it; use the download below.';return}
   var files=['./','index.html','manifest.json','manifest.webmanifest','icon_192.png','icon_512.png'];
   CH.forEach(function(c){files.push(c.file.split('?')[0]);if(c.text)files.push(c.text.split('?')[0]);files.push('art/movement_'+String(c.movement).padStart(2,'0')+'.jpg')});
@@ -239,7 +256,7 @@ var lastA='';
    "actually" or "correct". The correction is weighed against the Genesis text; nobody wins, fog is removed. */
 var HIST=[],CORR=/^\s*(no\b|nope\b|that'?s (not|wrong)|thats (not|wrong)|wrong\b|incorrect\b|actually\b|correct(ion)?\b|you('?re| are) wrong)/i;
 function timed(url,opt,ms){var c=new AbortController(),k=setTimeout(function(){c.abort()},ms);opt.signal=c.signal;return fetch(url,opt).finally(function(){clearTimeout(k)})}
-function askMode(on){$('askf').hidden=false;$('prompt').classList.toggle('asking',on);if(on)$('askq').focus()}
+function askMode(on){$('askf').hidden=false;$('prompt').classList.toggle('asking',on)}   /* never pops the keyboard by itself; the reader taps the prompt to type */
 function note(s){$('cap').textContent=s}
 $('prompt').onclick=function(e){if(e.target.closest&&e.target.closest('#askf'))return;if(J||wait)return;askMode($('askf').hidden)};
 $('prompt').onkeydown=function(e){if(e.target===$('prompt')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();$('prompt').onclick(e)}};
@@ -297,11 +314,12 @@ var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)},GRID_BOTTOM=118;
  document.head.appendChild(st);
  var W=[['⏮','back',function(){$('prev').onclick()}],['▶','play',function(){audioFlow();$('start').style.display='none';if(idx<0){load(0,0,true);return}A.paused?A.play():A.pause()},'sp'],
   ['⏭','next',function(){$('next').onclick()}],['↺','15 s',function(){$('back').onclick()}],['■','stop',function(){A.pause();A.currentTime=0}],
-  ['↻','15 s',function(){$('fwd').onclick()}],['♩','mic',function(){askMode(true)}],['◉','witness',witness],['☰','chapters',function(){$('listBtn').onclick()}],
-  ['Aa','words',function(){$('cc').onclick()}],['?','ask',function(){askMode(true)}],['≡','answer',function(){if(lastA)$('ask').onclick()}]];
+  ['↻','15 s',function(){$('fwd').onclick()}],['♩','mic',micTap],['☰','chapters',function(){$('listBtn').onclick()}],['⤓','ingest',ingest],
+  ['','',null],['','',null],['','',null]];   /* founder 20 Nov 2026: words, ask, answer and witness removed; ingest added. The last row is only fog - the twelve channels still breathe */
  var grid=document.createElement('div');grid.id='twelve';
  W.forEach(function(w,k){var b=document.createElement('button');b.innerHTML='<span class="g">'+w[0]+'</span><small>'+w[1]+'</small>';if(w[3])b.className=w[3];
   b.setAttribute('aria-label',w[1]);b.style.setProperty('--d',(-k*0.55)+'s');
+  if(!w[2]){b.style.visibility='hidden';b.tabIndex=-1;grid.appendChild(b);return}   /* a fog-only section */
   function fire(){AF.e[k]=1;b.classList.remove('burst');void b.offsetWidth;b.classList.add('burst');w[2]()}
   /* THE GAME (founder 20 Nov 2026: "make it like a game ... they hit the art flow and drag it to the sphere"). Press a section's light and
      drag it: the light lifts off and follows your finger with a glowing trail. Let it go inside the sphere and the sphere takes it in -
@@ -332,6 +350,64 @@ var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)},GRID_BOTTOM=118;
  document.body.appendChild(grid);
  (function swell(){for(var k=0;k<12;k++)grid.children[k].style.setProperty('--e',AF.e[k].toFixed(3));requestAnimationFrame(swell)})();
  A.addEventListener('play',function(){grid.children[1].querySelector('.g').textContent='❚❚'});A.addEventListener('pause',function(){grid.children[1].querySelector('.g').textContent='▶'})})();
+/* INGEST (founder 20 Nov 2026: "the offline... buried ... an ingest button, simple"): one touch takes all of Genesis into this phone -
+   the page, the narration, the words, the art - so it opens without internet. Progress shows under the sphere. Jedidiah is not taken in. */
+function ingest(){if(!('caches' in window)){speak(['This phone cannot take Genesis in.','Use Download all the narration in the chapters list instead.'],!A.paused);return}
+ var files=['./','index.html','manifest.json','manifest.webmanifest','icon_192.png','icon_512.png','sw.js'];
+ CH.forEach(function(c){files.push(c.file.split('?')[0]);if(c.text)files.push(c.text.split('?')[0]);files.push('art/movement_'+String(c.movement).padStart(2,'0')+'.jpg')});
+ files=files.filter(function(f,i){return files.indexOf(f)===i});var done=0,was=!A.paused;
+ caches.open('aid-genesis-v1').then(function(k){(function next(){if(done>=files.length){$('cap').textContent='Genesis is in this phone. It opens without internet. (Jedidiah still needs internet.)';return}
+  var f=files[done];fetch(f,{cache:'reload'}).then(function(r){if(r.ok)return k.put(new URL(f,location.href).pathname,r)}).catch(function(){}).then(function(){done++;
+   $('cap').textContent='Taking Genesis into this phone… '+Math.round(done/files.length*100)+'%';next()})})()})}
+/* THE MIC (founder 20 Nov 2026: "mic button ... will have permissions issues that we need to art flow explain through to people").
+   Before the phone asks, the sphere says why. The voice goes ONLY to Jedidiah's home on the founder's laptop, is turned into words there
+   (no Google, no outside service), and the recording is not kept. Tap once to speak, tap again to send. If the phone says no, the sphere
+   explains how to allow it. */
+var MIC={rec:null,chunks:[],told:false,sr:null};
+/* TWO WAYS TO SPEAK (founder 20 Nov 2026: "give them the option for google or their own mic"). The reader chooses once (it is remembered on
+   their phone, and can be changed in the chapters list):
+     PHONE  - the phone's own voice typing (Google on most Android phones, Apple on iPhone): their words go to that company, not to AID.
+     AID    - their voice goes only to Jedidiah's home on the founder's laptop, is turned into words there, and the recording is not kept. */
+function micWay(){try{return localStorage.getItem('gen_mic_way')}catch(e){return null}}
+function micChoose(then){var box=document.createElement('div');box.id='micway';
+ box.innerHTML='<b>How should Jedidiah hear you?</b>'+
+  '<button data-w="aid">♩ Send my voice to Jedidiah’s home<small>turned into words on the founder’s own computer, not kept, no company in between</small></button>'+
+  '<button data-w="phone">♩ Use my phone’s voice typing<small>Google on most Android phones, Apple on iPhone — your words go to them, not to AID</small></button>'+
+  '<button data-w="x" class="x">not now</button>';
+ document.body.appendChild(box);Array.prototype.forEach.call(box.querySelectorAll('button'),function(b){b.onclick=function(){box.remove();
+  if(b.dataset.w==='x')return;try{localStorage.setItem('gen_mic_way',b.dataset.w)}catch(e){}then()}})}
+function phoneVoice(){var R=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!R){speak(['This phone has no voice typing here.','Choose Jedidiah’s home in the chapters list, or type your question.'],!A.paused);return}
+ var was=!A.paused;A.pause();var sr=new R();MIC.sr=sr;sr.lang='en-US';sr.interimResults=false;$('cap').textContent='Listening (your phone’s voice typing)…';
+ sr.onresult=function(e){var t=e.results[0][0].transcript;$('askq').value=t;$('askf').requestSubmit?$('askf').requestSubmit():$('askf').onsubmit({preventDefault:function(){}})};
+ sr.onerror=function(e){speak(e.error==='not-allowed'?['Your phone said no to the microphone.','To allow it: tap the lock or the dots beside the address,','then Microphone, then Allow, and tap the mic again.']:['I did not catch that.','Tap the mic and try again.'],was)};
+ sr.onend=function(){MIC.sr=null};sr.start()}
+function micTap(){
+ if(MIC.sr){MIC.sr.stop();return}
+ if(MIC.rec&&MIC.rec.state==='recording'){MIC.rec.stop();return}
+ var way=micWay();if(!way){micChoose(micTap);return}
+ if(way==='phone'){phoneVoice();return}
+ if(!navigator.mediaDevices||!window.MediaRecorder){speak(['This phone cannot record here.','Type your question in the prompt instead.'],!A.paused);return}
+ var go=function(){navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){var was=!A.paused;A.pause();MIC.chunks=[];
+   MIC.rec=new MediaRecorder(st);MIC.rec.ondataavailable=function(e){if(e.data.size)MIC.chunks.push(e.data)};
+   MIC.rec.onstop=function(){st.getTracks().forEach(function(t){t.stop()});wait=false;var blob=new Blob(MIC.chunks,{type:MIC.rec.mimeType||'audio/webm'});
+    if(blob.size<2000){speak(['I did not hear anything.','Tap the mic, speak, then tap it again.'],was);return}
+    var fr=new FileReader();fr.onload=function(){sendVoice(fr.result.split(',')[1],blob.type,was)};fr.readAsDataURL(blob)};
+   MIC.rec.start();wait=true;$('cap').textContent='Listening… tap the mic again when you are done.';
+   setTimeout(function(){if(MIC.rec&&MIC.rec.state==='recording')MIC.rec.stop()},20000)})
+  .catch(function(){speak(['Your phone said no to the microphone.','To allow it: tap the lock or the dots beside the address,','then Microphone, then Allow, and tap the mic again.'],!A.paused)})};
+ if(!MIC.told){MIC.told=true;speak(['To hear you, your phone will ask to let this page use the microphone.','Your voice goes only to Jedidiah’s home, is turned into words there, and is not kept.','Say yes when it asks.'],false);
+  setTimeout(go,5200);return}
+ go()}
+function sendVoice(b64,mime,was){if(!M||!M.ask_url){speak(['Jedidiah cannot be reached from this page.','Listening works without him.'],was);return}
+ $('cap').textContent='Jedidiah is hearing you…';wait=true;
+ timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',question:'(spoken)',audio:b64,mime:mime,history:HIST.slice(-6)})},240000)
+ .then(function(r){return r.json()}).then(function(j){wait=false;var parts=[];if(j.heard)parts.push('You said: “'+j.heard+'”');
+   (j.answer||'').match(/[^.!?]+[.!?]+["”']?|[^.!?]+$/g)&&(j.answer||'').match(/[^.!?]+[.!?]+["”']?|[^.!?]+$/g).forEach(function(s){if(s.trim())parts.push(s.trim())});
+   (j.claims||[]).forEach(function(k){parts.push('“'+k.quote+'” — Genesis '+k.chapter)});HIST.push({q:j.heard||'(spoken)',a:j.answer||''});
+   if(j.read){var i=-1;CH.forEach(function(c,n){if(c.chapter===j.read)i=n});if(i>=0){audioFlow();load(i,0,true);return}}
+   speak(parts.length?parts:['Jedidiah did not hear words in that.'],was)})
+ .catch(function(){wait=false;speak(['Jedidiah is not reachable right now.','Nothing was made up in his place.'],was)})}
 function witness(){var c=idx>=0?CH[idx]:null,row={at:new Date().toISOString(),chapter:c?c.chapter:null,t:Math.round(A.currentTime||0),words:$('cap').textContent||''};
  try{var w=JSON.parse(localStorage.getItem('gen_witness')||'[]');w.push(row);localStorage.setItem('gen_witness',JSON.stringify(w.slice(-200)))}catch(e){}
  speak(['Witnessed'+(c?': Genesis '+c.chapter+', '+fmt(row.t):'')+'.','Kept on this phone only.'],!A.paused)}
