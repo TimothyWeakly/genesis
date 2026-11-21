@@ -384,12 +384,12 @@
   }
  ],
  "movements": {
-  "1": "Creation \u00b7 Ordered Beginning",
-  "2": "Fracture \u00b7 The Fall",
-  "3": "Judgment \u00b7 Preservation \u00b7 Covenant",
-  "4": "Call \u00b7 Pilgrimage \u00b7 Promise",
-  "5": "Struggle \u00b7 Transformation",
-  "6": "Providence \u00b7 Reconciliation \u00b7 Promise Carried Forward"
+  "1": "Creation · Ordered Beginning",
+  "2": "Fracture · The Fall",
+  "3": "Judgment · Preservation · Covenant",
+  "4": "Call · Pilgrimage · Promise",
+  "5": "Struggle · Transformation",
+  "6": "Providence · Reconciliation · Promise Carried Forward"
  },
- "ask_url": null
+ "ask_url": "https://genesis.aidgwesptspl.com/ask"
 }

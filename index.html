@@ -54,6 +54,9 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 #askp button{margin-top:10px;background:#1d170d;color:var(--gold);border:1px solid #3a3019;border-radius:18px;padding:8px 18px;font:inherit;cursor:pointer}
 #start{position:fixed;inset:0;display:grid;place-items:start center;align-content:start;padding-top:56vh;box-sizing:border-box;background:transparent;border:0;color:var(--text);cursor:pointer}
 #start span{padding:14px 26px;border:1px solid #e8c06a66;border-radius:30px;letter-spacing:.24em;font-size:14px;background:#03030599;box-shadow:0 0 40px #e8c06a22}
+/* PROMPT ONLY (founder 20 Nov 2026: "remove most of everything ... just a prompt and an ai agent over genesis"). The listening player
+   is kept, unchanged, at listen.html. */
+#start,.now,.seek,.ctl,.mini{display:none!important}
 </style>
 </head>
 <body>
@@ -65,7 +68,7 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 <div class="bar"><div class="wrap">
  <div id="prompt" role="button" tabindex="0" aria-label="The words being read. Tap to ask Jedidiah a question.">
   <div id="cap" aria-live="off"></div>
-  <form id="askf" hidden><input id="askq" maxlength="600" placeholder="Ask Jedidiah about this chapter" enterkeyhint="send" autocomplete="off"><button id="asks" type="submit" aria-label="Ask">&#10148;</button></form>
+  <form id="askf" hidden><input id="askq" maxlength="600" placeholder="Ask AID about Genesis" enterkeyhint="send" autocomplete="off"><button id="asks" type="submit" aria-label="Ask">&#10148;</button></form>
  </div><div id="capsrc"></div>
  <div class="now" id="now">Genesis</div>
  <div class="seek"><span id="cur">0:00</span><input id="seek" type="range" min="0" max="1000" value="0" aria-label="Seek"><span id="dur">0:00</span></div>
@@ -192,13 +195,12 @@ $('prompt').onclick=function(e){if(e.target.closest&&e.target.closest('#askf'))r
 $('prompt').onkeydown=function(e){if(e.target===$('prompt')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();$('prompt').onclick(e)}};
 $('askf').onsubmit=function(e){e.preventDefault();var q=$('askq').value.trim(),c=idx>=0?CH[idx]:null;if(!q)return;$('askq').value='';$('askq').blur();askMode(false);
  var was=!A.paused;
- if(!c){speak(['Choose a chapter first, so Jedidiah knows which text you are asking about.'],was);return}
  if(!M||!M.ask_url){A.pause();speak(['Jedidiah cannot be reached from this page yet.','Listening works without him.'],was);return}
  A.pause();wait=true;$('prompt').classList.add('asking');launch('',performance.now());note('Looking for Jedidiah…');var t0=Date.now(),tick=null;
  function fail(){clearInterval(tick);wait=false;$('prompt').classList.remove('asking');speak(['Jedidiah is not reachable right now.','Nothing was made up in his place.'],was)}
  timed(M.ask_url.replace(/ask$/,'health'),{},7000).then(function(r){return r.json()}).then(function(){
-  tick=setInterval(function(){note('Jedidiah is reading Genesis '+c.chapter+'… '+Math.round((Date.now()-t0)/1000)+' s')},1000);
-  return timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',chapter:c.chapter,question:q})},240000)})
+  tick=setInterval(function(){note('Jedidiah is reading Genesis… '+Math.round((Date.now()-t0)/1000)+' s')},1000);
+  return timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',chapter:c?c.chapter:null,question:q})},240000)})
  .then(function(r){return r.json()}).then(function(j){clearInterval(tick);wait=false;$('prompt').classList.remove('asking');
   var h='<p>'+esc(j.answer||'')+'</p>',parts=(j.answer||'').match(/[^.!?]+[.!?]+["”']?|[^.!?]+$/g)||[];parts=parts.map(function(s){return s.trim()}).filter(Boolean);
   (j.claims||[]).forEach(function(k){h+='<p class="q">“'+esc(k.quote)+'” — Genesis '+esc(k.chapter)+'</p>';parts.push('“'+k.quote+'” — Genesis '+k.chapter)});
@@ -210,6 +212,7 @@ $('ask').onclick=function(){$('askb').innerHTML=lastA;$('askp').classList.add('o
 $('askx').onclick=function(){$('askp').classList.remove('open')};
 setInterval(function(){capTick(performance.now())},250);   /* the words keep time even when the picture is not being drawn, and while the narration waits for Jedidiah */
 requestAnimationFrame(draw);
+setTimeout(function(){askMode(true)},400);   /* the prompt is open from the start */
 })();
 </script>
 </body>
