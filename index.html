@@ -81,6 +81,11 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 <div id="sheet"><button class="close" id="close" aria-label="Close">&times;</button><h2>GENESIS</h2><div id="list"></div></div>
 <audio id="a" preload="metadata"></audio>
 <script>
+/* ALWAYS THE NEWEST PAGE (founder 20 Nov 2026: "nothing has changed" - his phone kept an older saved copy for 10 minutes). On opening, the page
+   asks the server for itself without any saved copy; if what is published differs from what is showing, it reloads once into the new one. */
+(function(){var BUILD='20261120-2245';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
+ fetch(location.pathname+'?fresh='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
+  var m=t.match(/var BUILD='([^']+)'/);if(!m||m[1]!==BUILD)location.replace(location.pathname+'?v='+Date.now())}).catch(function(){})})();
 (function(){
 var $=function(i){return document.getElementById(i)},A=$('a'),M,CH=[],idx=-1,K='genesis_logos_field_v1';
 function fmt(s){s=Math.max(0,Math.floor(s||0));var m=Math.floor(s/60),x=s%60;return m+':'+String(x).padStart(2,'0')}
