@@ -90,7 +90,7 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
   if(j&&j.ok)return fetch(A,{method:'GET',cache:'no-store'}).then(function(r){if(r.ok&&/text\/html/.test(r.headers.get('content-type')||''))location.replace(A)})}).catch(function(){})})();
 /* ALWAYS THE NEWEST PAGE (founder 20 Nov 2026: "nothing has changed" - his phone kept an older saved copy for 10 minutes). On opening, the page
    asks the server for itself without any saved copy; if what is published differs from what is showing, it reloads once into the new one. */
-(function(){var BUILD='20261120-2345';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
+(function(){var BUILD='20261121-0005';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
  fetch(location.pathname+'?fresh='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
   var m=t.match(/var BUILD='([^']+)'/);if(!m||m[1]!==BUILD)location.replace(location.pathname+'?v='+Date.now())}).catch(function(){})})();
 (function(){
@@ -104,7 +104,7 @@ for(var i=0;i<520;i++)S.push({a:Math.random()*6.283,r:Math.random(),s:.15+Math.r
 var glow=0;
 /* THE FOUNDER'S PULSE (20 Nov 2026: "can my pulse pulse in everyone's sphere who listens"). When he shares it and his heart strap is on,
    the sphere's light beats with his heart - only the beat's timing, no numbers, nothing about the reader is sent. Otherwise it rests. */
-var FP={live:false,at:0,iv:0};
+var FP={live:false,at:0,iv:0},SF=0;   /* SF: the sphere's flash when a reader drags light into it */
 function fpPoll(){if(!M||!M.ask_url)return;fetch(M.ask_url.replace(/ask$/,'health'),{cache:'no-store'}).then(function(r){return r.json()}).then(function(j){var p=j.pulse||{};
  if(p.live&&p.interval_ms){FP.live=true;FP.iv=p.interval_ms;FP.at=performance.now()-p.since_ms}else FP.live=false}).catch(function(){FP.live=false})}
 setInterval(fpPoll,3000);setTimeout(fpPoll,800);
@@ -113,7 +113,7 @@ function draw(t){
  for(var i=0;i<S.length;i++){var p=S[i];p.r-=.0006*p.s*(A.paused?.35:1);if(p.r<.02){p.r=1;p.a=Math.random()*6.283}
   var d=R*.9+p.r*Math.max(W,H)*.75,x=cx+Math.cos(p.a+t*.00002)*d,y=cy+Math.sin(p.a+t*.00002)*d*.62;
   g.globalAlpha=Math.min(1,p.r*1.6)*.8;g.fillStyle=p.h?'#e8c06a':'#cfd8ff';g.fillRect(x,y,DPR*p.s*1.4,DPR*p.s*1.4)}
- g.globalAlpha=1;var gr=g.createRadialGradient(cx,cy,R*.6,cx,cy,R*1.5);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(.42,'rgba(232,192,106,'+(.10+glow*.12+hb*.26)+')');
+ g.globalAlpha=1;var gr=g.createRadialGradient(cx,cy,R*.6,cx,cy,R*1.5);gr.addColorStop(0,'rgba(0,0,0,0)');SF*=.94;gr.addColorStop(.42,'rgba(232,192,106,'+Math.min(.95,.10+glow*.12+hb*.26+SF*.6)+')');
  gr.addColorStop(.55,'rgba(79,209,197,.05)');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.beginPath();g.arc(cx,cy,R*1.5,0,6.283);g.fill();
  g.fillStyle='#010102';g.beginPath();g.arc(cx,cy,R,0,6.283);g.fill();
  g.strokeStyle='rgba(232,192,106,'+Math.min(1,.55+.25*Math.sin(t*.0007)+hb*.4)+')';g.lineWidth=DPR*1.2;g.beginPath();g.arc(cx,cy,R,0,6.283);g.stroke();
@@ -273,7 +273,33 @@ var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)},GRID_BOTTOM=118;
  var grid=document.createElement('div');grid.id='twelve';
  W.forEach(function(w,k){var b=document.createElement('button');b.innerHTML='<span class="g">'+w[0]+'</span><small>'+w[1]+'</small>';if(w[3])b.className=w[3];
   b.setAttribute('aria-label',w[1]);b.style.setProperty('--d',(-k*0.55)+'s');
-  b.onclick=function(e){e.stopPropagation();AF.e[k]=1;b.classList.remove('burst');void b.offsetWidth;b.classList.add('burst');w[2]()};grid.appendChild(b)});
+  function fire(){AF.e[k]=1;b.classList.remove('burst');void b.offsetWidth;b.classList.add('burst');w[2]()}
+  /* THE GAME (founder 20 Nov 2026: "make it like a game ... they hit the art flow and drag it to the sphere"). Press a section's light and
+     drag it: the light lifts off and follows your finger with a glowing trail. Let it go inside the sphere and the sphere takes it in -
+     a flash of gold - and that action happens. Let it go anywhere else and it drifts home. A quick tap still works too. */
+  b.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();b.setPointerCapture(e.pointerId);
+   var x0=e.clientX,y0=e.clientY,moved=false,gh=document.createElement('div'),trail=[];
+   gh.innerHTML=w[0];gh.style.cssText='position:fixed;z-index:20;pointer-events:none;left:0;top:0;font:200 40px system-ui;color:#fff4d6;'+
+    'text-shadow:0 0 10px #e8c06a,0 0 26px #ffaad7,0 0 46px #d6aaff;transform:translate(-50%,-50%) translate('+x0+'px,'+y0+'px) scale(1.2);transition:none;opacity:0';
+   document.body.appendChild(gh);
+   function sphere(){return {x:innerWidth/2,y:(innerHeight-GRID_BOTTOM)/8,r:Math.min(innerWidth,innerHeight)*.13}}
+   function move(ev){var dx=ev.clientX-x0,dy=ev.clientY-y0;if(!moved&&Math.hypot(dx,dy)<10)return;moved=true;gh.style.opacity=1;
+    gh.style.transform='translate(-50%,-50%) translate('+ev.clientX+'px,'+ev.clientY+'px) scale(1.2)';AF.e[k]=Math.max(AF.e[k],.7);
+    var s=sphere(),near=Math.hypot(ev.clientX-s.x,ev.clientY-s.y)<s.r*1.4;SF=Math.max(SF,near?.5:0);
+    var p=document.createElement('div');p.style.cssText='position:fixed;z-index:19;pointer-events:none;width:10px;height:10px;border-radius:50%;left:'+(ev.clientX-5)+'px;top:'+(ev.clientY-5)+'px;'+
+     'background:radial-gradient(circle,rgba(255,240,250,.9),rgba(255,170,215,.45) 45%,transparent 70%);transition:opacity .7s ease-out,transform .7s ease-out';
+    document.body.appendChild(p);requestAnimationFrame(function(){p.style.opacity=0;p.style.transform='scale(2.6)'});setTimeout(function(){p.remove()},750)}
+   function up(ev){b.removeEventListener('pointermove',move);b.removeEventListener('pointerup',up);b.removeEventListener('pointercancel',up);
+    if(!moved){gh.remove();fire();return}
+    var s=sphere();
+    if(Math.hypot(ev.clientX-s.x,ev.clientY-s.y)<s.r*1.4){   /* taken into the sphere */
+     gh.style.transition='transform .45s ease-in,opacity .45s ease-in';gh.style.transform='translate(-50%,-50%) translate('+s.x+'px,'+s.y+'px) scale(.2)';gh.style.opacity=0;
+     setTimeout(function(){gh.remove();SF=1;fire()},430)}
+    else{var r=b.getBoundingClientRect();gh.style.transition='transform .6s ease-out,opacity .6s ease-out';   /* drifts home */
+     gh.style.transform='translate(-50%,-50%) translate('+(r.left+r.width/2)+'px,'+(r.top+r.height/2)+'px) scale(1)';gh.style.opacity=0;setTimeout(function(){gh.remove()},620)}}
+   b.addEventListener('pointermove',move);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up)});
+  b.onclick=function(e){e.stopPropagation();if(e.detail===0)fire()};   /* keyboard / screen-reader activation still works */
+  b.style.touchAction='none';grid.appendChild(b)});
  document.body.appendChild(grid);
  (function swell(){for(var k=0;k<12;k++)grid.children[k].style.setProperty('--e',AF.e[k].toFixed(3));requestAnimationFrame(swell)})();
  A.addEventListener('play',function(){grid.children[1].querySelector('.g').textContent='❚❚'});A.addEventListener('pause',function(){grid.children[1].querySelector('.g').textContent='▶'})})();
