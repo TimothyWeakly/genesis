@@ -103,9 +103,13 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
   if(j&&j.ok)return fetch(A,{method:'GET',cache:'no-store'}).then(function(r){if(r.ok&&/text\/html/.test(r.headers.get('content-type')||''))location.replace(A)})}).catch(function(){})})();
 /* ALWAYS THE NEWEST PAGE (founder 20 Nov 2026: "nothing has changed" - his phone kept an older saved copy for 10 minutes). On opening, the page
    asks the server for itself without any saved copy; if what is published differs from what is showing, it reloads once into the new one. */
-(function(){var BUILD='20261121-0120';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
- fetch(location.pathname+'?fresh='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
-  var m=t.match(/var BUILD='([^']+)'/);if(!m||m[1]!==BUILD)location.replace(location.pathname+'?v='+Date.now())}).catch(function(){})})();
+/* founder 20 Nov 2026 (again seeing the old buttons): the check used to run once per tab and never again. Now it runs every time the page is
+   opened or comes back into view; it reloads only into a newer published build, and never twice for the same build (no loops). */
+(function(){var BUILD='20261121-0140';
+ function check(){if(!navigator.onLine)return;fetch(location.pathname+'?fresh='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
+  var m=t.match(/var BUILD='([^']+)'/);if(!m||m[1]===BUILD)return;var tried=null;try{tried=sessionStorage.getItem('gen_build_tried')}catch(e){}
+  if(tried===m[1])return;try{sessionStorage.setItem('gen_build_tried',m[1])}catch(e){}location.replace(location.pathname+'?v='+Date.now())}).catch(function(){})}
+ check();document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')check()})})();
 (function(){
 var $=function(i){return document.getElementById(i)},A=$('a'),M,CH=[],idx=-1,K='genesis_logos_field_v1';
 function fmt(s){s=Math.max(0,Math.floor(s||0));var m=Math.floor(s/60),x=s%60;return m+':'+String(x).padStart(2,'0')}
