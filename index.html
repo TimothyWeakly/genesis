@@ -194,6 +194,9 @@ setCap();$('cc').onclick=function(){capOn=!capOn;try{localStorage.setItem(K+'_cc
    reached (manifest.ask_url). When he cannot be reached the prompt says so plainly and nothing is made up. ---------- */
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 var lastA='';
+/* THE READER'S GYM (founder 20 Nov 2026): the conversation is held, and a reader can correct Jedidiah - start with "no", "that's wrong",
+   "actually" or "correct". The correction is weighed against the Genesis text; nobody wins, fog is removed. */
+var HIST=[],CORR=/^\s*(no|nope|that'?s (not|wrong)|thats (not|wrong)|wrong|incorrect|actually|correct(ion)?|you('?re| are) wrong)/i;
 function timed(url,opt,ms){var c=new AbortController(),k=setTimeout(function(){c.abort()},ms);opt.signal=c.signal;return fetch(url,opt).finally(function(){clearTimeout(k)})}
 function askMode(on){$('askf').hidden=!on;$('cap').style.display=on?'none':'flex';$('prompt').classList.toggle('asking',on);if(on)$('askq').focus()}
 function note(s){$('cap').textContent=s}
@@ -206,12 +209,12 @@ $('askf').onsubmit=function(e){e.preventDefault();var q=$('askq').value.trim(),c
  function fail(){clearInterval(tick);wait=false;$('prompt').classList.remove('asking');speak(['Jedidiah is not reachable right now.','Nothing was made up in his place.'],was)}
  timed(M.ask_url.replace(/ask$/,'health'),{},7000).then(function(r){return r.json()}).then(function(){
   tick=setInterval(function(){note('Jedidiah is reading Genesis… '+Math.round((Date.now()-t0)/1000)+' s')},1000);
-  return timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',chapter:c?c.chapter:null,question:q})},240000)})
+  return timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',chapter:c?c.chapter:null,question:q,history:HIST.slice(-6),correction:CORR.test(q)})},240000)})
  .then(function(r){return r.json()}).then(function(j){clearInterval(tick);wait=false;$('prompt').classList.remove('asking');
   var h='<p>'+esc(j.answer||'')+'</p>',parts=(j.answer||'').match(/[^.!?]+[.!?]+["”']?|[^.!?]+$/g)||[];parts=parts.map(function(s){return s.trim()}).filter(Boolean);
   (j.claims||[]).forEach(function(k){h+='<p class="q">“'+esc(k.quote)+'” — Genesis '+esc(k.chapter)+'</p>';parts.push('“'+k.quote+'” — Genesis '+k.chapter)});
   (j.unknowns||[]).forEach(function(u){h+='<p class="q">Unknown: '+esc(u)+'</p>';parts.push('Unknown: '+u)});
-  lastA='<p class="q">You asked: '+esc(q)+'</p>'+h;$('ask').hidden=false;
+  lastA='<p class="q">You asked: '+esc(q)+'</p>'+h;HIST.push({q:q,a:j.answer||''});$('askq').placeholder='Ask, or correct Jedidiah';$('ask').hidden=false;
   if(parts.length)speak(parts,was);else fail()})
  .catch(fail)};
 $('ask').onclick=function(){$('askb').innerHTML=lastA;$('askp').classList.add('open')};
