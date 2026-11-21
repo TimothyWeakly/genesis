@@ -97,7 +97,7 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
   if(j&&j.ok)return fetch(A,{method:'GET',cache:'no-store'}).then(function(r){if(r.ok&&/text\/html/.test(r.headers.get('content-type')||''))location.replace(A)})}).catch(function(){})})();
 /* ALWAYS THE NEWEST PAGE (founder 20 Nov 2026: "nothing has changed" - his phone kept an older saved copy for 10 minutes). On opening, the page
    asks the server for itself without any saved copy; if what is published differs from what is showing, it reloads once into the new one. */
-(function(){var BUILD='20261121-0045';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
+(function(){var BUILD='20261121-0055';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
  fetch(location.pathname+'?fresh='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
   var m=t.match(/var BUILD='([^']+)'/);if(!m||m[1]!==BUILD)location.replace(location.pathname+'?v='+Date.now())}).catch(function(){})})();
 (function(){
@@ -216,8 +216,8 @@ window.addEventListener('popstate',function(e){var open=$('sheet').classList.con
    - download the narration: all 50 chapters as audio files to keep anywhere */
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 (function(){var box=document.createElement('div');box.id='keep';box.innerHTML='<button id="keepall">\u2913 Keep all of Genesis on this phone</button>'+
- '<small id="keepst">sphere, words and narration - opens without internet</small>'+
- '<a id="dlzip" href="https://github.com/TimothyWeakly/genesis/releases/download/narration-v1/AID_Genesis_Narration.zip">\u2913 Download all the narration (audio, 256 MB)</a>';
+ '<small id="keepst">sphere, words and narration - opens without internet. Jedidiah is not in the kept copy: asking him needs internet.</small>'+
+ '<a id="dlzip" href="https://github.com/TimothyWeakly/genesis/releases/download/narration-v1/AID_Genesis_Narration.zip">\u2913 Download all the narration (audio only, no Jedidiah, 256 MB)</a>';
  $('list').parentNode.insertBefore(box,$('list'));
  $('keepall').onclick=function(){if(!('caches' in window)){$('keepst').textContent='This phone cannot keep it; use the download below.';return}
   var files=['./','index.html','manifest.json','manifest.webmanifest','icon_192.png','icon_512.png'];
