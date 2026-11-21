@@ -90,7 +90,7 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
   if(j&&j.ok)return fetch(A,{method:'GET',cache:'no-store'}).then(function(r){if(r.ok&&/text\/html/.test(r.headers.get('content-type')||''))location.replace(A)})}).catch(function(){})})();
 /* ALWAYS THE NEWEST PAGE (founder 20 Nov 2026: "nothing has changed" - his phone kept an older saved copy for 10 minutes). On opening, the page
    asks the server for itself without any saved copy; if what is published differs from what is showing, it reloads once into the new one. */
-(function(){var BUILD='20261120-2245';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
+(function(){var BUILD='20261120-2330';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
  fetch(location.pathname+'?fresh='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
   var m=t.match(/var BUILD='([^']+)'/);if(!m||m[1]!==BUILD)location.replace(location.pathname+'?v='+Date.now())}).catch(function(){})})();
 (function(){
@@ -214,7 +214,13 @@ function askMode(on){$('askf').hidden=!on;$('cap').style.display=on?'none':'flex
 function note(s){$('cap').textContent=s}
 $('prompt').onclick=function(e){if(e.target.closest&&e.target.closest('#askf'))return;if(J||wait)return;askMode($('askf').hidden)};
 $('prompt').onkeydown=function(e){if(e.target===$('prompt')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();$('prompt').onclick(e)}};
+/* READ = HEAR (founder 20 Nov 2026: "i dont hear anything... its reading genesis over playing it"). "Read / begin / play Genesis 5" plays the
+   recorded narration of that chapter, with its words pouring from the sphere in time - right here on the phone, even when Jedidiah's laptop
+   is asleep. No AI reads it aloud: it is the Genesis recording itself. */
+var READQ=/\b(read|begin|start|play|recite|open|listen to)\b[^0-9]{0,40}?(?:genesis|gen|chapter|ch\.?)\s*(\d{1,2})\b|^\s*(?:genesis|gen|chapter)\s*(\d{1,2})\s*[.!?]?\s*$/i;
+function playChapter(n){var i=-1;CH.forEach(function(c,k){if(c.chapter===n)i=k});if(i<0)return false;audioFlow();load(i,0,true);return true}
 $('askf').onsubmit=function(e){e.preventDefault();var q=$('askq').value.trim(),c=idx>=0?CH[idx]:null;if(!q)return;$('askq').value='';$('askq').blur();askMode(false);
+ var rm=q.match(READQ);if(rm&&playChapter(+(rm[2]||rm[3]))){HIST.push({q:q,a:'(the narration of Genesis '+(rm[2]||rm[3])+' played)'});return}
  var was=!A.paused;
  if(!M||!M.ask_url){A.pause();speak(['Jedidiah cannot be reached from this page yet.','Listening works without him.'],was);return}
  A.pause();wait=true;$('prompt').classList.add('asking');launch('',performance.now());note('Looking for Jedidiah…');var t0=Date.now(),tick=null;
@@ -232,6 +238,27 @@ $('askf').onsubmit=function(e){e.preventDefault();var q=$('askq').value.trim(),c
 $('ask').onclick=function(){$('askb').innerHTML=lastA;$('askp').classList.add('open')};
 $('askx').onclick=function(){$('askp').classList.remove('open')};
 setInterval(function(){capTick(performance.now())},250);   /* the words keep time even when the picture is not being drawn, and while the narration waits for Jedidiah */
+/* THE TWELVE SECTIONS (founder 20 Nov 2026: "use the same overlay we used for the logos field screen on my phone - 12 sections ... when the
+   audio bible is playing, those 12 channels have different art flow audio channels"). The same faint nebula fog along each section's edges as
+   the Logos Field; while the narration plays, each section breathes with its own band of the voice - low tones in the first section, high
+   in the twelfth. Faint, so you only kinda know the sections are there. Nothing is analysed or sent anywhere; it is only light on this screen. */
+var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)};
+function audioFlow(){if(AF.ctx)return;try{var C=window.AudioContext||window.webkitAudioContext;AF.ctx=new C();var s=AF.ctx.createMediaElementSource(A);
+ AF.an=AF.ctx.createAnalyser();AF.an.fftSize=1024;AF.an.smoothingTimeConstant=.8;s.connect(AF.an);AF.an.connect(AF.ctx.destination);AF.buf=new Uint8Array(AF.an.frequencyBinCount)}catch(e){AF.ctx=null}}
+A.addEventListener('play',function(){audioFlow();if(AF.ctx&&AF.ctx.state==='suspended')AF.ctx.resume()});
+(function(){var cv=document.createElement('canvas');cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;z-index:1';
+ document.body.insertBefore(cv,document.body.firstChild.nextSibling);var g=cv.getContext('2d');
+ function band(k){if(!AF.an||A.paused)return 0;AF.an.getByteFrequencyData(AF.buf);var n=AF.buf.length,lo=Math.floor(2*Math.pow(n/2,k/12)),hi=Math.max(lo+1,Math.floor(2*Math.pow(n/2,(k+1)/12))),s=0;
+  for(var i=lo;i<hi&&i<n;i++)s+=AF.buf[i];return Math.min(1,s/(hi-lo)/170)}
+ (function fr(t){var d=window.devicePixelRatio||1,W=innerWidth*d,H=innerHeight*d;if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
+  g.clearRect(0,0,W,H);var C=W>H?4:3,R=12/C,bw=W/C,bh=H/R,cx=W/2,cy=H*.28;g.globalCompositeOperation='lighter';
+  for(var k=0;k<12;k++){var v=band(k);AF.e[k]+=(v-AF.e[k])*.12;var G=.18+.82*AF.e[k],x0=(k%C)*bw,y0=Math.floor(k/C)*bh,per=2*(bw+bh),r=Math.min(bw,bh)*.13;
+   for(var i=0;i<40;i++){var q=((i/40)+t*.0000045*(1+((i*7+k)%3))+k*.13)%1*per,px,py;
+    if(q<bw){px=x0+q;py=y0}else if((q-=bw)<bh){px=x0+bw;py=y0+q}else if((q-=bh)<bw){px=x0+bw-q;py=y0+bh}else{q-=bw;px=x0;py=y0+bh-q}
+    var L=Math.hypot(cx-px,cy-py)||1,pull=(3+8*G)*d;px+=(cx-px)/L*pull+Math.sin(t*.0003+i*1.3)*3*d;py+=(cy-py)/L*pull+Math.cos(t*.00027+i)*3*d;
+    var rr=r*(.8+.4*((i*.618)%1)),a=(.05+.16*G)*(.6+.4*Math.sin(t*.0005+i*2.1)),neb=i%3===0?'255,170,215':i%3===1?'214,170,255':'255,200,230',fg=g.createRadialGradient(px,py,0,px,py,rr);
+    fg.addColorStop(0,'rgba('+neb+','+a.toFixed(3)+')');fg.addColorStop(.55,'rgba('+neb+','+(a*.35).toFixed(3)+')');fg.addColorStop(1,'rgba('+neb+',0)');g.fillStyle=fg;g.fillRect(px-rr,py-rr,rr*2,rr*2)}}
+  g.globalCompositeOperation='source-over';requestAnimationFrame(fr)})(0)})();
 requestAnimationFrame(draw);
 setTimeout(function(){askMode(true)},400);   /* the prompt is open from the start */
 })();
