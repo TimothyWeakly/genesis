@@ -90,7 +90,7 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
   if(j&&j.ok)return fetch(A,{method:'GET',cache:'no-store'}).then(function(r){if(r.ok&&/text\/html/.test(r.headers.get('content-type')||''))location.replace(A)})}).catch(function(){})})();
 /* ALWAYS THE NEWEST PAGE (founder 20 Nov 2026: "nothing has changed" - his phone kept an older saved copy for 10 minutes). On opening, the page
    asks the server for itself without any saved copy; if what is published differs from what is showing, it reloads once into the new one. */
-(function(){var BUILD='20261120-2330';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
+(function(){var BUILD='20261120-2345';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
  fetch(location.pathname+'?fresh='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
   var m=t.match(/var BUILD='([^']+)'/);if(!m||m[1]!==BUILD)location.replace(location.pathname+'?v='+Date.now())}).catch(function(){})})();
 (function(){
@@ -109,7 +109,7 @@ function fpPoll(){if(!M||!M.ask_url)return;fetch(M.ask_url.replace(/ask$/,'healt
  if(p.live&&p.interval_ms){FP.live=true;FP.iv=p.interval_ms;FP.at=performance.now()-p.since_ms}else FP.live=false}).catch(function(){FP.live=false})}
 setInterval(fpPoll,3000);setTimeout(fpPoll,800);
 function draw(t){
- var cx=W/2,cy=H*.28,R=Math.min(W,H)*.13,hb=FP.live&&FP.iv>300?Math.exp(-((performance.now()-FP.at)%FP.iv)/FP.iv*6):0;g.fillStyle='#030305';g.fillRect(0,0,W,H);
+ var cx=W/2,cy=(H-GRID_BOTTOM*DPR)/8,R=Math.min(W,H)*.13,hb=FP.live&&FP.iv>300?Math.exp(-((performance.now()-FP.at)%FP.iv)/FP.iv*6):0;g.fillStyle='#030305';g.fillRect(0,0,W,H);
  for(var i=0;i<S.length;i++){var p=S[i];p.r-=.0006*p.s*(A.paused?.35:1);if(p.r<.02){p.r=1;p.a=Math.random()*6.283}
   var d=R*.9+p.r*Math.max(W,H)*.75,x=cx+Math.cos(p.a+t*.00002)*d,y=cy+Math.sin(p.a+t*.00002)*d*.62;
   g.globalAlpha=Math.min(1,p.r*1.6)*.8;g.fillStyle=p.h?'#e8c06a':'#cfd8ff';g.fillRect(x,y,DPR*p.s*1.4,DPR*p.s*1.4)}
@@ -242,7 +242,44 @@ setInterval(function(){capTick(performance.now())},250);   /* the words keep tim
    audio bible is playing, those 12 channels have different art flow audio channels"). The same faint nebula fog along each section's edges as
    the Logos Field; while the narration plays, each section breathes with its own band of the voice - low tones in the first section, high
    in the twelfth. Faint, so you only kinda know the sections are there. Nothing is analysed or sent anywhere; it is only light on this screen. */
-var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)};
+var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)},GRID_BOTTOM=118;
+/* THE TWELVE ARE BUTTONS, ART FLOWED (founder 20 Nov 2026: "a play button, mic button, stop, next, back, witness button ... but art flow them
+   ... don't make them boring"). Each section is a control. Its sign is light, not print: gold and nebula-pink glowing out of the fog, breathing
+   slowly, swelling with that section's band of the voice while the narration plays, and bursting with light when touched.
+     prev chapter | play / pause (the sphere) | next chapter
+     back 15 s    | stop                      | forward 15 s
+     mic          | witness this moment       | chapters
+     words on/off | ask Jedidiah              | last answer
+   Mic opens the prompt so the phone's own keyboard microphone can be used (this page never sends your voice anywhere).
+   Witness keeps the moment - chapter, time and the words being spoken - on THIS phone only; nothing is sent. */
+(function(){var st=document.createElement('style');st.textContent=
+ '#twelve{position:fixed;left:0;right:0;top:0;bottom:'+GRID_BOTTOM+'px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);z-index:2}'+
+ '#twelve button{position:relative;background:transparent;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}'+
+ '#twelve .g{font:200 30px system-ui;background:linear-gradient(160deg,#fff4d6 0%,#e8c06a 45%,#ffb3d9 100%);-webkit-background-clip:text;background-clip:text;color:transparent;'+
+ 'filter:drop-shadow(0 0 6px rgba(232,192,106,.55)) drop-shadow(0 0 16px rgba(255,170,215,.35));opacity:calc(.30 + var(--e,0)*.6);transform:scale(calc(1 + var(--e,0)*.18));'+
+ 'animation:breathe 6s ease-in-out infinite;animation-delay:var(--d);transition:opacity .25s,transform .25s}'+
+ '#twelve small{font:500 9px system-ui;letter-spacing:.32em;text-transform:uppercase;color:#d8c9ff;opacity:calc(.22 + var(--e,0)*.4);text-shadow:0 0 8px rgba(214,170,255,.7)}'+
+ '#twelve button::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px;border-radius:50%;background:radial-gradient(circle,rgba(255,240,250,.9),rgba(255,170,215,.4) 40%,transparent 70%);opacity:0;pointer-events:none}'+
+ '#twelve button.burst::after{animation:burst .7s ease-out}'+
+ '@keyframes breathe{0%,100%{filter:drop-shadow(0 0 5px rgba(232,192,106,.45)) drop-shadow(0 0 12px rgba(255,170,215,.25))}50%{filter:drop-shadow(0 0 9px rgba(232,192,106,.75)) drop-shadow(0 0 22px rgba(255,170,215,.45))}}'+
+ '@keyframes burst{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(22)}}'+
+ '#twelve .sp .g,#twelve .sp small{opacity:calc(.12 + var(--e,0)*.5)}'+
+ '.bar{z-index:5}#sheet,#askp{z-index:10}@media (orientation:landscape){#twelve{grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr)}}';
+ document.head.appendChild(st);
+ var W=[['⏮','back',function(){$('prev').onclick()}],['▶','play',function(){audioFlow();$('start').style.display='none';if(idx<0){load(0,0,true);return}A.paused?A.play():A.pause()},'sp'],
+  ['⏭','next',function(){$('next').onclick()}],['↺','15 s',function(){$('back').onclick()}],['■','stop',function(){A.pause();A.currentTime=0}],
+  ['↻','15 s',function(){$('fwd').onclick()}],['♩','mic',function(){askMode(true)}],['◉','witness',witness],['☰','chapters',function(){$('listBtn').onclick()}],
+  ['Aa','words',function(){$('cc').onclick()}],['?','ask',function(){askMode(true)}],['≡','answer',function(){if(lastA)$('ask').onclick()}]];
+ var grid=document.createElement('div');grid.id='twelve';
+ W.forEach(function(w,k){var b=document.createElement('button');b.innerHTML='<span class="g">'+w[0]+'</span><small>'+w[1]+'</small>';if(w[3])b.className=w[3];
+  b.setAttribute('aria-label',w[1]);b.style.setProperty('--d',(-k*0.55)+'s');
+  b.onclick=function(e){e.stopPropagation();AF.e[k]=1;b.classList.remove('burst');void b.offsetWidth;b.classList.add('burst');w[2]()};grid.appendChild(b)});
+ document.body.appendChild(grid);
+ (function swell(){for(var k=0;k<12;k++)grid.children[k].style.setProperty('--e',AF.e[k].toFixed(3));requestAnimationFrame(swell)})();
+ A.addEventListener('play',function(){grid.children[1].querySelector('.g').textContent='❚❚'});A.addEventListener('pause',function(){grid.children[1].querySelector('.g').textContent='▶'})})();
+function witness(){var c=idx>=0?CH[idx]:null,row={at:new Date().toISOString(),chapter:c?c.chapter:null,t:Math.round(A.currentTime||0),words:$('cap').textContent||''};
+ try{var w=JSON.parse(localStorage.getItem('gen_witness')||'[]');w.push(row);localStorage.setItem('gen_witness',JSON.stringify(w.slice(-200)))}catch(e){}
+ speak(['Witnessed'+(c?': Genesis '+c.chapter+', '+fmt(row.t):'')+'.','Kept on this phone only.'],!A.paused)}
 function audioFlow(){if(AF.ctx)return;try{var C=window.AudioContext||window.webkitAudioContext;AF.ctx=new C();var s=AF.ctx.createMediaElementSource(A);
  AF.an=AF.ctx.createAnalyser();AF.an.fftSize=1024;AF.an.smoothingTimeConstant=.8;s.connect(AF.an);AF.an.connect(AF.ctx.destination);AF.buf=new Uint8Array(AF.an.frequencyBinCount)}catch(e){AF.ctx=null}}
 A.addEventListener('play',function(){audioFlow();if(AF.ctx&&AF.ctx.state==='suspended')AF.ctx.resume()});
@@ -251,7 +288,7 @@ A.addEventListener('play',function(){audioFlow();if(AF.ctx&&AF.ctx.state==='susp
  function band(k){if(!AF.an||A.paused)return 0;AF.an.getByteFrequencyData(AF.buf);var n=AF.buf.length,lo=Math.floor(2*Math.pow(n/2,k/12)),hi=Math.max(lo+1,Math.floor(2*Math.pow(n/2,(k+1)/12))),s=0;
   for(var i=lo;i<hi&&i<n;i++)s+=AF.buf[i];return Math.min(1,s/(hi-lo)/170)}
  (function fr(t){var d=window.devicePixelRatio||1,W=innerWidth*d,H=innerHeight*d;if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
-  g.clearRect(0,0,W,H);var C=W>H?4:3,R=12/C,bw=W/C,bh=H/R,cx=W/2,cy=H*.28;g.globalCompositeOperation='lighter';
+  g.clearRect(0,0,W,H);var C=W>H?4:3,R=12/C,bw=W/C,bh=(H-GRID_BOTTOM*d)/R,cx=W/2,cy=(H-GRID_BOTTOM*d)/8;g.globalCompositeOperation='lighter';
   for(var k=0;k<12;k++){var v=band(k);AF.e[k]+=(v-AF.e[k])*.12;var G=.18+.82*AF.e[k],x0=(k%C)*bw,y0=Math.floor(k/C)*bh,per=2*(bw+bh),r=Math.min(bw,bh)*.13;
    for(var i=0;i<40;i++){var q=((i/40)+t*.0000045*(1+((i*7+k)%3))+k*.13)%1*per,px,py;
     if(q<bw){px=x0+q;py=y0}else if((q-=bw)<bh){px=x0+bw;py=y0+q}else if((q-=bh)<bw){px=x0+bw-q;py=y0+bh}else{q-=bw;px=x0;py=y0+bh-q}
