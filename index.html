@@ -196,7 +196,7 @@ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;
 var lastA='';
 /* THE READER'S GYM (founder 20 Nov 2026): the conversation is held, and a reader can correct Jedidiah - start with "no", "that's wrong",
    "actually" or "correct". The correction is weighed against the Genesis text; nobody wins, fog is removed. */
-var HIST=[],CORR=/^\s*(no|nope|that'?s (not|wrong)|thats (not|wrong)|wrong|incorrect|actually|correct(ion)?|you('?re| are) wrong)/i;
+var HIST=[],CORR=/^\s*(no\b|nope\b|that'?s (not|wrong)|thats (not|wrong)|wrong\b|incorrect\b|actually\b|correct(ion)?\b|you('?re| are) wrong)/i;
 function timed(url,opt,ms){var c=new AbortController(),k=setTimeout(function(){c.abort()},ms);opt.signal=c.signal;return fetch(url,opt).finally(function(){clearTimeout(k)})}
 function askMode(on){$('askf').hidden=!on;$('cap').style.display=on?'none':'flex';$('prompt').classList.toggle('asking',on);if(on)$('askq').focus()}
 function note(s){$('cap').textContent=s}
