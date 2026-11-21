@@ -90,15 +90,21 @@ var fc=$('flow'),fx=fc.getContext('2d');
 function size(){W=cv.width=fc.width=innerWidth*DPR;H=cv.height=fc.height=innerHeight*DPR}size();addEventListener('resize',size);
 for(var i=0;i<520;i++)S.push({a:Math.random()*6.283,r:Math.random(),s:.15+Math.random()*.85,h:Math.random()<.18});
 var glow=0;
+/* THE FOUNDER'S PULSE (20 Nov 2026: "can my pulse pulse in everyone's sphere who listens"). When he shares it and his heart strap is on,
+   the sphere's light beats with his heart - only the beat's timing, no numbers, nothing about the reader is sent. Otherwise it rests. */
+var FP={live:false,at:0,iv:0};
+function fpPoll(){if(!M||!M.ask_url)return;fetch(M.ask_url.replace(/ask$/,'health'),{cache:'no-store'}).then(function(r){return r.json()}).then(function(j){var p=j.pulse||{};
+ if(p.live&&p.interval_ms){FP.live=true;FP.iv=p.interval_ms;FP.at=performance.now()-p.since_ms}else FP.live=false}).catch(function(){FP.live=false})}
+setInterval(fpPoll,3000);setTimeout(fpPoll,800);
 function draw(t){
- var cx=W/2,cy=H*.44,R=Math.min(W,H)*.2;g.fillStyle='#030305';g.fillRect(0,0,W,H);
+ var cx=W/2,cy=H*.44,R=Math.min(W,H)*.2,hb=FP.live&&FP.iv>300?Math.exp(-((performance.now()-FP.at)%FP.iv)/FP.iv*6):0;g.fillStyle='#030305';g.fillRect(0,0,W,H);
  for(var i=0;i<S.length;i++){var p=S[i];p.r-=.0006*p.s*(A.paused?.35:1);if(p.r<.02){p.r=1;p.a=Math.random()*6.283}
   var d=R*.9+p.r*Math.max(W,H)*.75,x=cx+Math.cos(p.a+t*.00002)*d,y=cy+Math.sin(p.a+t*.00002)*d*.62;
   g.globalAlpha=Math.min(1,p.r*1.6)*.8;g.fillStyle=p.h?'#e8c06a':'#cfd8ff';g.fillRect(x,y,DPR*p.s*1.4,DPR*p.s*1.4)}
- g.globalAlpha=1;var gr=g.createRadialGradient(cx,cy,R*.6,cx,cy,R*1.5);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(.42,'rgba(232,192,106,'+(.10+glow*.12)+')');
+ g.globalAlpha=1;var gr=g.createRadialGradient(cx,cy,R*.6,cx,cy,R*1.5);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(.42,'rgba(232,192,106,'+(.10+glow*.12+hb*.26)+')');
  gr.addColorStop(.55,'rgba(79,209,197,.05)');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.beginPath();g.arc(cx,cy,R*1.5,0,6.283);g.fill();
  g.fillStyle='#010102';g.beginPath();g.arc(cx,cy,R,0,6.283);g.fill();
- g.strokeStyle='rgba(232,192,106,'+(.55+.25*Math.sin(t*.0007))+')';g.lineWidth=DPR*1.2;g.beginPath();g.arc(cx,cy,R,0,6.283);g.stroke();
+ g.strokeStyle='rgba(232,192,106,'+Math.min(1,.55+.25*Math.sin(t*.0007)+hb*.4)+')';g.lineWidth=DPR*1.2;g.beginPath();g.arc(cx,cy,R,0,6.283);g.stroke();
  g.strokeStyle='rgba(79,209,197,.25)';g.lineWidth=DPR*.8;g.beginPath();g.arc(cx,cy,R*1.012,0,6.283);g.stroke();
  g.fillStyle='rgba(255,226,150,.95)';g.beginPath();g.arc(cx,H*.86,DPR*1.6,0,6.283);g.fill();          /* the far point of light */
  fx.clearRect(0,0,W,H);pour(t,cx,cy);visual();requestAnimationFrame(draw)}
