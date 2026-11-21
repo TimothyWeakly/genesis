@@ -81,6 +81,13 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 <div id="sheet"><button class="close" id="close" aria-label="Close">&times;</button><h2>GENESIS</h2><div id="list"></div></div>
 <audio id="a" preload="metadata"></audio>
 <script>
+/* THE DOOR (founder 20 Nov 2026: "if I need to wait ten minutes to fix a crack, that's not AID"). The QR opens this GitHub copy. When AID is
+   awake on the founder's laptop, the door opens straight into AID's own page (never cached, so every fix is live at once). When AID is
+   asleep, this copy stays and the reader can still listen. */
+(function(){if(!/github\.io$/.test(location.hostname))return;var A='https://genesis.aidgwesptspl.com/';
+ var c=new AbortController();setTimeout(function(){c.abort()},2500);
+ fetch(A+'health',{cache:'no-store',signal:c.signal}).then(function(r){return r.ok?r.json():null}).then(function(j){
+  if(j&&j.ok)return fetch(A,{method:'GET',cache:'no-store'}).then(function(r){if(r.ok&&/text\/html/.test(r.headers.get('content-type')||''))location.replace(A)})}).catch(function(){})})();
 /* ALWAYS THE NEWEST PAGE (founder 20 Nov 2026: "nothing has changed" - his phone kept an older saved copy for 10 minutes). On opening, the page
    asks the server for itself without any saved copy; if what is published differs from what is showing, it reloads once into the new one. */
 (function(){var BUILD='20261120-2245';try{if(sessionStorage.getItem('gen_build_checked'))return;sessionStorage.setItem('gen_build_checked','1')}catch(e){return}
