@@ -105,7 +105,7 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
    asks the server for itself without any saved copy; if what is published differs from what is showing, it reloads once into the new one. */
 /* founder 20 Nov 2026 (again seeing the old buttons): the check used to run once per tab and never again. Now it runs every time the page is
    opened or comes back into view; it reloads only into a newer published build, and never twice for the same build (no loops). */
-(function(){var BUILD='20261121-0210';
+(function(){var BUILD='20261121-0230';
  function check(){if(!navigator.onLine)return;fetch(location.pathname+'?fresh='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
   var m=t.match(/var BUILD='([^']+)'/);if(!m||m[1]===BUILD)return;var tried=null;try{tried=sessionStorage.getItem('gen_build_tried')}catch(e){}
   if(tried===m[1])return;try{sessionStorage.setItem('gen_build_tried',m[1])}catch(e){}location.replace(location.pathname+'?v='+Date.now())}).catch(function(){})}
@@ -232,7 +232,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
  /* YOUR SAFETY HERE (founder 20 Nov 2026: "explain all the safety on the phone and permissions and all that") - plain, complete, no fine print */
  '<details id="safety"><summary>Your safety on this page</summary>'+
  '<p><b>Nothing about you is taken.</b> No sign-in, no account, no name, no tracking. The page does not know who you are.</p>'+
- '<p><b>Permissions.</b> The only permission this page ever asks for is the microphone - and only when you tap the mic. If you never tap it, it never asks. You can take it back any time in your browser\u2019s site settings (the lock or dots beside the address).</p>'+
+ '<p><b>Permissions.</b> This page asks for only two things, and only when you choose: the microphone (when you tap the mic), and notifications (when you tap ingest, so your phone can tell you when Genesis is in). If you never tap them, it never asks. You can take it back any time in your browser\u2019s site settings (the lock or dots beside the address).</p>'+
  '<p><b>Your voice.</b> You choose: send it to Jedidiah\u2019s home (turned into words on the founder\u2019s own computer, then the recording is deleted), or use your phone\u2019s voice typing (Google on most Android phones, Apple on iPhone - then your words go to them, not to AID).</p>'+
  '<p><b>Your questions.</b> When you ask Jedidiah, your question and his answer are kept, with the time and nothing else - no name, no phone, no place - so the founder can see where Jedidiah helps or fails and make him better.</p>'+
  '<p><b>The heartbeat in the sphere</b> is the founder\u2019s own, shared by his choice. Nothing of your heart or body is read here.</p>'+
@@ -372,16 +372,30 @@ function cancelIngest(){ING.stop=true}
 function homeScreen(){if(INSTALL){INSTALL.prompt();INSTALL.userChoice.then(function(c){speak(c.outcome==='accepted'?['AID Genesis is on your home screen.','Tap its sphere icon to open Genesis - with or without internet.']:['Not added. You can add it any time from here.'],!A.paused)});return}
  speak(/iPhone|iPad/.test(navigator.userAgent)?['To put AID Genesis on your home screen:','tap Share (the square with the arrow), then Add to Home Screen.']:
   ['To put AID Genesis on your home screen:','tap the menu (three dots) beside the address, then Add to Home screen or Install app.'],!A.paused)}
-function ingest(){if(ING.on)return;if(!('caches' in window)){speak(['This phone cannot take Genesis in.','Use Download all the narration in the chapters list instead.'],!A.paused);return}
+/* founder 20 Nov 2026: "shouldn't the phone give a notification ... show a download, allow me to hit it and enter ... show an app ... serve them".
+   Ingest SERVES the reader: one touch offers AID Genesis as an APP on their phone (its own sphere icon), asks once if the phone may notify them,
+   shows the taking-in as a download notification with its progress, and ends with a notification they tap to ENTER Genesis. */
+function phoneNote(body,done){if(!('Notification' in window)||Notification.permission!=='granted'||!navigator.serviceWorker)return;
+ navigator.serviceWorker.ready.then(function(r){r.showNotification(done?'AID Genesis is ready':'AID Genesis ⤓ downloading',{body:body,icon:'icon_192.png',badge:'icon_192.png',
+  tag:'aid-genesis-ingest',renotify:!!done,silent:!done,requireInteraction:!!done,data:{open:'./'}})}).catch(function(){})}
+function notifyDone(){phoneNote('Genesis is in your phone. Tap to enter - with or without internet.',true)}
+function askNotify(then){if(!('Notification' in window)||Notification.permission!=='default'){then();return}
+ speak(['Your phone will ask if AID Genesis may notify you.','Say yes and it shows the download, and tells you when Genesis is ready to enter.'],!A.paused);
+ setTimeout(function(){Notification.requestPermission().then(function(){then()},function(){then()})},3200)}
+function ingest(){if(ING.on)return;
+ if(INSTALL&&!ING.offered){ING.offered=true;INSTALL.prompt();INSTALL.userChoice.then(function(c){if(c.outcome==='accepted')emerge('home screen',false)}).catch(function(){})}   /* the app, offered at once */
+ if(!ING.asked){ING.asked=true;askNotify(ingest);return}
+ if(!('caches' in window)){speak(['This phone cannot take Genesis in.','Use Download all the narration in the chapters list instead.'],!A.paused);return}
  var files=['./','index.html','manifest.json','manifest.webmanifest','icon_192.png','icon_512.png','sw.js'];
  CH.forEach(function(c){files.push(c.file.split('?')[0]);if(c.text)files.push(c.text.split('?')[0]);files.push('art/movement_'+String(c.movement).padStart(2,'0')+'.jpg')});
  files=files.filter(function(f,i){return files.indexOf(f)===i});var done=0;ING.stop=false;ING.on=true;emerge('cancel',true);
  caches.open('aid-genesis-v1').then(function(k){(function next(){
   if(ING.stop){ING.on=false;emerge('cancel',false);$('cap').textContent='Stopped. What was taken in stays; tap ingest to finish any time.';return}
-  if(done>=files.length){ING.on=false;emerge('cancel',false);emerge('home screen',true);
+  if(done>=files.length){ING.on=false;emerge('cancel',false);emerge('home screen',true);notifyDone();
    speak(['Genesis is in this phone now - kept inside this browser, not as a file.','Tap home screen to give it its own sphere icon.','It opens without internet. Jedidiah still needs internet.'],!A.paused);return}
   var f=files[done];fetch(f,{cache:'reload'}).then(function(r){if(r.ok)return k.put(new URL(f,location.href).pathname,r)}).catch(function(){}).then(function(){done++;
-   $('cap').textContent='Taking Genesis into this phone… '+Math.round(done/files.length*100)+'%';next()})})()})}
+   var pc=Math.round(done/files.length*100);$('cap').textContent='Taking Genesis into this phone… '+pc+'%';
+   if(done===1||done%10===0)phoneNote(pc+'% - all 50 chapters, words and art. You can leave this page; it keeps going while it is open.',false);next()})})()})}
 /* THE MIC (founder 20 Nov 2026: "mic button ... will have permissions issues that we need to art flow explain through to people").
    Before the phone asks, the sphere says why. The voice goes ONLY to Jedidiah's home on the founder's laptop, is turned into words there
    (no Google, no outside service), and the recording is not kept. Tap once to speak, tap again to send. If the phone says no, the sphere

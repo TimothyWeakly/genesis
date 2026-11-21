@@ -18,3 +18,8 @@ self.addEventListener("fetch", e => {
     return r;
   })));
 });
+
+self.addEventListener("notificationclick", e => {   // tapping the 'Genesis is in your phone' notification opens AID Genesis
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({type: "window"}).then(cs => { for (const c of cs) if ("focus" in c) return c.focus(); return self.clients.openWindow((e.notification.data && e.notification.data.open) || "./"); }));
+});
