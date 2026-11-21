@@ -105,7 +105,7 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
    asks the server for itself without any saved copy; if what is published differs from what is showing, it reloads once into the new one. */
 /* founder 20 Nov 2026 (again seeing the old buttons): the check used to run once per tab and never again. Now it runs every time the page is
    opened or comes back into view; it reloads only into a newer published build, and never twice for the same build (no loops). */
-(function(){var BUILD='20261121-0200';
+(function(){var BUILD='20261121-0210';
  function check(){if(!navigator.onLine)return;fetch(location.pathname+'?fresh='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
   var m=t.match(/var BUILD='([^']+)'/);if(!m||m[1]===BUILD)return;var tried=null;try{tried=sessionStorage.getItem('gen_build_tried')}catch(e){}
   if(tried===m[1])return;try{sessionStorage.setItem('gen_build_tried',m[1])}catch(e){}location.replace(location.pathname+'?v='+Date.now())}).catch(function(){})}
@@ -239,6 +239,10 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
  '<p><b>Keeping Genesis on your phone</b> stores it in your browser only. Clear it any time by clearing this site\u2019s data.</p>'+
  '<p><b>Jedidiah</b> answers only from the Genesis text. He never judges you, never takes sides, and never claims to be more than a servant of the text.</p></details>';
  $('list').parentNode.insertBefore(box,$('list'));
+ /* founder 20 Nov 2026: "download works... but does no good if user cant find it" - the sphere says exactly where it went and how to open it */
+ $('dlzip').addEventListener('click',function(){var iOS=/iPhone|iPad/.test(navigator.userAgent);overlayClose();setTimeout(function(){speak(iOS?
+  ['The narration is downloading as AID_Genesis_Narration.zip.','Find it in the Files app, under Downloads.','Tap it once - it opens into a folder of all 50 chapters, ready to play.']:
+  ['The narration is downloading as AID_Genesis_Narration.zip.','Find it in your Files app (My Files on Samsung), under Downloads.','Tap it and choose Extract - you get a folder of all 50 chapters to play in any music app.'],!A.paused)},400)});
  $('micchange').onclick=function(){try{localStorage.removeItem('gen_mic_way')}catch(e){}overlayClose();setTimeout(function(){micChoose(function(){speak(['Done. Tap the mic when you want to speak.'],!A.paused)})},350)};
  $('keepall').onclick=function(){if(!('caches' in window)){$('keepst').textContent='This phone cannot keep it; use the download below.';return}
   var files=['./','index.html','manifest.json','manifest.webmanifest','icon_192.png','icon_512.png'];
