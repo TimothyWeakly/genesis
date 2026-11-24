@@ -282,6 +282,8 @@ $('askf').onsubmit=function(e){e.preventDefault();var q=$('askq').value.trim(),c
  var gone=false,give=setTimeout(function(){gone=true;clearInterval(tick);wait=false;$('prompt').classList.remove('asking');speak(['Jedidiah can’t answer right now; keep listening.'],was)},8000);
  function fail(){if(gone)return;clearTimeout(give);gone=true;clearInterval(tick);wait=false;$('prompt').classList.remove('asking');speak(['Jedidiah is not reachable right now.','Nothing was made up in his place.'],was)}
  timed(M.ask_url.replace(/ask$/,'health'),{},7000).then(function(r){return r.json()}).then(function(){if(gone)throw 0;
+  /* he is there: wait for his real answer (Codex reasons it in seconds to a minute), up to 2.5 min - the 8 s limit is only for an unreachable Jedidiah */
+  clearTimeout(give);give=setTimeout(function(){gone=true;clearInterval(tick);wait=false;$('prompt').classList.remove('asking');speak(['Jedidiah can’t answer right now; keep listening.'],was)},150000);
   tick=setInterval(function(){note('Jedidiah is reading Genesis… '+Math.round((Date.now()-t0)/1000)+' s')},1000);
   return lensB64(att).then(function(img){return timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',chapter:c?c.chapter:null,question:q,history:HIST.slice(-6),correction:CORR.test(q)})},240000)})})
  .then(function(r){return r.json()}).then(function(j){if(gone)return;clearTimeout(give);gone=true;clearInterval(tick);wait=false;$('prompt').classList.remove('asking');
