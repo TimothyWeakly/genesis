@@ -127,7 +127,7 @@ function fpPoll(){if(!M||!M.ask_url)return;fetch(M.ask_url.replace(/ask$/,'healt
  if(p.live&&p.interval_ms){FP.live=true;FP.iv=p.interval_ms;FP.at=performance.now()-p.since_ms}else FP.live=false}).catch(function(){FP.live=false})}
 setInterval(fpPoll,3000);setTimeout(fpPoll,800);
 function draw(t){
- var cx=W/2,cy=(H-GRID_BOTTOM*DPR)/8,R=Math.min(W,H)*.13,hb=FP.live&&FP.iv>300?Math.exp(-((performance.now()-FP.at)%FP.iv)/FP.iv*6):0;g.fillStyle='#030305';g.fillRect(0,0,W,H);
+ var dw=t*.00007,cx=W*(.5+.24*Math.sin(dw)),cy=(H-GRID_BOTTOM*DPR)*(.125+.16*(1-Math.cos(dw*2))/2),R=   /* founder 24 Nov 2026: AID's own black Logos sphere moves, really slow (about 90 s a loop), and the words pour only from it */Math.min(W,H)*.13,hb=FP.live&&FP.iv>300?Math.exp(-((performance.now()-FP.at)%FP.iv)/FP.iv*6):0;g.fillStyle='#030305';g.fillRect(0,0,W,H);
  for(var i=0;i<S.length;i++){var p=S[i];p.r-=.0006*p.s*(A.paused?.35:1);if(p.r<.02){p.r=1;p.a=Math.random()*6.283}
   var d=R*.9+p.r*Math.max(W,H)*.75,x=cx+Math.cos(p.a+t*.00002)*d,y=cy+Math.sin(p.a+t*.00002)*d*.62;
   g.globalAlpha=Math.min(1,p.r*1.6)*.8;g.fillStyle=p.h?'#e8c06a':'#cfd8ff';g.fillRect(x,y,DPR*p.s*1.4,DPR*p.s*1.4)}
@@ -165,16 +165,7 @@ function capTick(t){   /* which phrase is being spoken: runs on the audio's own 
 var burst=0,AN={1:[.50,.26],2:[.49,.33],3:[.50,.47],4:[.23,.33],5:[.51,.13],6:[.48,.12]};   /* where the light is in each chapter picture */
 function path(e,ox,oy,tx,ty,sway,bow){var mx=ox+(tx-ox)*.2+bow*W*.30,my=oy+(ty-oy)*.35;return[(1-e)*(1-e)*ox+2*(1-e)*e*mx+e*e*tx+sway,(1-e)*(1-e)*oy+2*(1-e)*e*my+e*e*ty]}
 function pour(t,cx,cy){
- capTick(t);var R=Math.min(W,H)*.13,col=(J||wait)?'79,209,197':'232,192,106',el=$('pA'),CW=fx.canvas.width,CHh=fx.canvas.height,
-  /* THE WORD SPHERE (founder 24 Nov 2026: "make that sphere move around..really slow....so words for sure only come from it...make it look cool"):
-     a small living sphere drifts on a slow figure-of-eight through the middle of the screen (about 90 s a loop); every word pours from it */
-  ws=t*.00007,ox=CW*(.5+.26*Math.sin(ws)),oy=CHh*(.40+.09*Math.sin(ws*2+.6)),wr=Math.min(CW,CHh)*.045*(1+.06*Math.sin(t*.0017));
- var halo=fx.createRadialGradient(ox,oy,0,ox,oy,wr*4.2);halo.addColorStop(0,'rgba('+col+',.22)');halo.addColorStop(.35,'rgba('+col+',.08)');halo.addColorStop(1,'rgba('+col+',0)');
- fx.fillStyle=halo;fx.beginPath();fx.arc(ox,oy,wr*4.2,0,6.283);fx.fill();
- var core=fx.createRadialGradient(ox-wr*.35,oy-wr*.35,wr*.1,ox,oy,wr);core.addColorStop(0,'rgba(255,248,232,.95)');core.addColorStop(.35,'rgba('+col+',.75)');core.addColorStop(.8,'rgba(40,24,40,.85)');core.addColorStop(1,'rgba('+col+',.5)');
- fx.fillStyle=core;fx.beginPath();fx.arc(ox,oy,wr,0,6.283);fx.fill();
- fx.strokeStyle='rgba('+col+',.55)';fx.lineWidth=DPR;fx.beginPath();fx.ellipse(ox,oy,wr*1.7,wr*.45,t*.00025,0,6.283);fx.stroke();
- for(var m=0;m<3;m++){var ma=t*.0006*(1+m*.4)+m*2.1,mr=wr*(1.6+m*.5);fx.fillStyle='rgba(255,240,214,'+(.5-m*.12)+')';fx.beginPath();fx.arc(ox+Math.cos(ma)*mr,oy+Math.sin(ma)*mr*.55,DPR*(1.4-m*.3),0,6.283);fx.fill()}   /* founder 24 Nov 2026: "why is words coming from top sphere": they pour from the middle - the emerged picture's light when it shows, else the centre - down into the bottom row */
+ capTick(t);var R=Math.min(W,H)*.13,col=(J||wait)?'79,209,197':'232,192,106',ox=cx,oy=cy;   /* the words pour only from AID's black Logos sphere, wherever it has drifted */   /* founder 24 Nov 2026: "why is words coming from top sphere": they pour from the middle - the emerged picture's light when it shows, else the centre - down into the bottom row */
  if(burst){var a=(t-burst)/1000;if(a<1){fx.strokeStyle='rgba('+col+','+(.6*(1-a)).toFixed(3)+')';fx.lineWidth=DPR*(2.4-1.8*a);fx.beginPath();fx.arc(ox,oy,DPR*8+R*.85*a,0,6.283);fx.stroke();
    fx.strokeStyle='rgba('+col+','+(.3*(1-a)).toFixed(3)+')';fx.lineWidth=DPR;fx.beginPath();fx.arc(ox,oy,DPR*8+R*1.35*a,0,6.283);fx.stroke()}else burst=0}
  if(capOn&&!still&&tgt&&(J||wait||(T&&!A.paused))){
