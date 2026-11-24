@@ -232,7 +232,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
  /* YOUR SAFETY HERE (founder 20 Nov 2026: "explain all the safety on the phone and permissions and all that") - plain, complete, no fine print */
  '<details id="safety"><summary>Your safety on this page</summary>'+
  '<p><b>Nothing about you is taken.</b> No sign-in, no account, no name, no tracking. The page does not know who you are.</p>'+
- '<p><b>Permissions.</b> This page asks for only two things, and only when you choose: the microphone (when you tap the mic), and notifications (when you tap ingest, so your phone can tell you when Genesis is in). If you never tap them, it never asks. You can take it back any time in your browser\u2019s site settings (the lock or dots beside the address).</p>'+
+ '<p><b>Permissions.</b> This page asks for only three things, and only when you choose: the microphone (when you tap the mic), the camera (when you take a picture with the lens - the picture stays on your phone and is never sent), and notifications (when you tap ingest, so your phone can tell you when Genesis is in). If you never tap them, it never asks. You can take it back any time in your browser\u2019s site settings (the lock or dots beside the address).</p>'+
  '<p><b>Your voice.</b> You choose: send it to Jedidiah\u2019s home (turned into words on the founder\u2019s own computer, then the recording is deleted), or use your phone\u2019s voice typing (Google on most Android phones, Apple on iPhone - then your words go to them, not to AID).</p>'+
  '<p><b>Your questions.</b> When you ask Jedidiah, your question and his answer are kept, with the time and nothing else - no name, no phone, no place - so the founder can see where Jedidiah helps or fails and make him better.</p>'+
  '<p><b>The heartbeat in the sphere</b> is the founder\u2019s own, shared by his choice. Nothing of your heart or body is read here.</p>'+
@@ -275,19 +275,21 @@ var READQ=/\b(read|begin|start|play|recite|open|listen to)\b[^0-9]{0,40}?(?:gene
 function playChapter(n){var i=-1;CH.forEach(function(c,k){if(c.chapter===n)i=k});if(i<0)return false;audioFlow();load(i,0,true);return true}
 $('askf').onsubmit=function(e){e.preventDefault();var q=$('askq').value.trim(),c=idx>=0?CH[idx]:null;if(!q)return;$('askq').value='';$('askq').blur();askMode(false);
  var rm=q.match(READQ);if(rm&&playChapter(+(rm[2]||rm[3]))){HIST.push({q:q,a:'(the narration of Genesis '+(rm[2]||rm[3])+' played)'});return}
- var was=!A.paused;
+ var was=!A.paused,att=LENS.att;LENS.att=null;$('askq').placeholder='Ask, or correct Jedidiah';   /* a lens picture goes only with the one question it was chosen for */
  if(!M||!M.ask_url){A.pause();speak(['Jedidiah cannot be reached from this page yet.','Listening works without him.'],was);return}
  A.pause();wait=true;$('prompt').classList.add('asking');launch('',performance.now());note('Looking for Jedidiah…');var t0=Date.now(),tick=null;
- function fail(){clearInterval(tick);wait=false;$('prompt').classList.remove('asking');speak(['Jedidiah is not reachable right now.','Nothing was made up in his place.'],was)}
- timed(M.ask_url.replace(/ask$/,'health'),{},7000).then(function(r){return r.json()}).then(function(){
+ /* ASK NEVER HANGS (founder 23 Nov 2026: "Yes, fix it"): no answer within 8 s = stop waiting, say so calmly, keep listening; a late answer is ignored */
+ var gone=false,give=setTimeout(function(){gone=true;clearInterval(tick);wait=false;$('prompt').classList.remove('asking');speak(['Jedidiah can’t answer right now; keep listening.'],was)},8000);
+ function fail(){if(gone)return;clearTimeout(give);gone=true;clearInterval(tick);wait=false;$('prompt').classList.remove('asking');speak(['Jedidiah is not reachable right now.','Nothing was made up in his place.'],was)}
+ timed(M.ask_url.replace(/ask$/,'health'),{},7000).then(function(r){return r.json()}).then(function(){if(gone)throw 0;
   tick=setInterval(function(){note('Jedidiah is reading Genesis… '+Math.round((Date.now()-t0)/1000)+' s')},1000);
-  return timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',chapter:c?c.chapter:null,question:q,history:HIST.slice(-6),correction:CORR.test(q)})},240000)})
- .then(function(r){return r.json()}).then(function(j){clearInterval(tick);wait=false;$('prompt').classList.remove('asking');
+  return lensB64(att).then(function(img){return timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',chapter:c?c.chapter:null,question:q,history:HIST.slice(-6),correction:CORR.test(q)})},240000)})})
+ .then(function(r){return r.json()}).then(function(j){if(gone)return;clearTimeout(give);gone=true;clearInterval(tick);wait=false;$('prompt').classList.remove('asking');
   var h='<p>'+esc(j.answer||'')+'</p>',parts=(j.answer||'').match(/[^.!?]+[.!?]+["”']?|[^.!?]+$/g)||[];parts=parts.map(function(s){return s.trim()}).filter(Boolean);
   (j.claims||[]).forEach(function(k){h+='<p class="q">“'+esc(k.quote)+'” — Genesis '+esc(k.chapter)+'</p>';parts.push('“'+k.quote+'” — Genesis '+k.chapter)});
   (j.unknowns||[]).forEach(function(u){h+='<p class="q">Unknown: '+esc(u)+'</p>';parts.push('Unknown: '+u)});
   lastA='<p class="q">You asked: '+esc(q)+'</p>'+h;HIST.push({q:q,a:j.answer||''});$('askq').placeholder='Ask, or correct Jedidiah';$('ask').hidden=false;
-  if(parts.length)speak(parts,was);else fail()})
+  if(parts.length)speak(parts,was);else speak(['Jedidiah is not reachable right now.','Nothing was made up in his place.'],was)})
  .catch(fail)};
 $('ask').onclick=function(){$('askb').innerHTML=lastA;overlayOpen('askp')};
 $('askx').onclick=overlayClose;
@@ -324,7 +326,7 @@ var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)},GRID_BOTTOM=118;
  var W=[['⏮','back',function(){$('prev').onclick()}],['▶','play',function(){audioFlow();$('start').style.display='none';if(idx<0){load(0,0,true);return}A.paused?A.play():A.pause()},'sp'],
   ['⏭','next',function(){$('next').onclick()}],['↺','15 s',function(){$('back').onclick()}],['■','stop',function(){A.pause();A.currentTime=0}],
   ['↻','15 s',function(){$('fwd').onclick()}],['♩','mic',micTap],['☰','chapters',function(){$('listBtn').onclick()}],['⤓','ingest',ingest],
-  ['✕','cancel',cancelIngest,'hide'],['','',null],['⌂','home screen',homeScreen,'hide']];   /* the empty blocks: cancel emerges while ingesting; home screen emerges when it is in */   /* founder 20 Nov 2026: words, ask, answer and witness removed; ingest added. The last row is only fog - the twelve channels still breathe */
+  ['✕','cancel',cancelIngest,'hide'],['◎','lens',lensTap],['⌂','home screen',homeScreen,'hide']];   /* THE READER'S LENS (founder 24 Nov 2026: "a mic...witness lens and an ai that can reason in that"): the reader's own, kept only on their phone */   /* the empty blocks: cancel emerges while ingesting; home screen emerges when it is in */   /* founder 20 Nov 2026: words, ask, answer and witness removed; ingest added. The last row is only fog - the twelve channels still breathe */
  var grid=document.createElement('div');grid.id='twelve';
  W.forEach(function(w,k){var b=document.createElement('button');b.innerHTML='<span class="g">'+w[0]+'</span><small>'+w[1]+'</small>';if(w[3])b.className=w[3];
   b.setAttribute('aria-label',w[1]);b.style.setProperty('--d',(-k*0.55)+'s');
@@ -436,6 +438,44 @@ function micTap(){
  if(!MIC.told){MIC.told=true;speak(['To hear you, your phone will ask to let this page use the microphone.','Your voice goes only to Jedidiah’s home, is turned into words there, and is not kept.','Say yes when it asks.'],false);
   setTimeout(go,5200);return}
  go()}
+/* THE READER'S LENS: a picture the reader takes while listening is kept on THEIR phone beside the chapter they were in. It is never sent to
+   AID, to Jedidiah or to anyone; it is not part of the founder's witness. Tap the lens again within the chapter to see what you kept. */
+var LENS={db:null,att:null};
+/* SAFER SHARING (founder 24 Nov 2026: "with greater security confidence through this"): before a picture leaves the phone - to Jedidiah,
+   a church, anyone - it is redrawn fresh, which removes the hidden location (GPS), time and phone details a camera writes into photos. */
+function lensClean(blob){return (window.createImageBitmap?createImageBitmap(blob,{imageOrientation:'from-image'}):Promise.reject()).then(function(bm){
+  var s=Math.min(1,2048/Math.max(bm.width,bm.height)),cv=document.createElement('canvas');cv.width=Math.round(bm.width*s);cv.height=Math.round(bm.height*s);
+  cv.getContext('2d').drawImage(bm,0,0,cv.width,cv.height);return new Promise(function(ok){cv.toBlob(function(b){ok(b||blob)},'image/jpeg',.9)})}).catch(function(){return null})}
+function lensB64(blob){return (blob?lensClean(blob):Promise.resolve(null)).then(function(b){return new Promise(function(ok){blob=b;if(!blob)return ok(null);var r=new FileReader();r.onload=function(){ok({mime:blob.type||'image/jpeg',data:String(r.result).split(',')[1]})};r.onerror=function(){ok(null)};r.readAsDataURL(blob)})})}
+function lensDB(){return LENS.db||(LENS.db=new Promise(function(ok,no){var r=indexedDB.open('reader_lens',1);r.onupgradeneeded=function(){r.result.createObjectStore('p',{keyPath:'id',autoIncrement:true})};r.onsuccess=function(){ok(r.result)};r.onerror=function(){no(r.error)}}))}
+function lensKeep(blob,ch){return lensDB().then(function(d){return new Promise(function(ok,no){var t=d.transaction('p','readwrite');t.objectStore('p').add({chapter:ch,when:Date.now(),blob:blob});t.oncomplete=ok;t.onerror=function(){no(t.error)}})})}
+function lensAll(){return lensDB().then(function(d){return new Promise(function(ok){var out=[],q=d.transaction('p').objectStore('p').openCursor();q.onsuccess=function(){var c=q.result;if(c){out.push(c.value);c.continue()}else ok(out)}})})}
+function lensShow(){var ch=idx>=0?CH[idx].chapter:null;   /* opens at once (so the camera button is a real tap), then fills in what was kept */
+ $('askb').innerHTML='<p class="q">The Witness Lens'+(ch?' · Genesis '+ch:'')+'</p>'+
+  '<p>Your camera becomes a lens for what you are hearing. Take a picture of something that speaks to you while Genesis plays - a page, a place, a sky, your hand-written notes. It is kept on this phone beside the chapter.</p>'+
+  '<p>Under any picture tap <b>Share</b> to send it wherever you choose - your church, a friend, your family - straight from your phone, without AID. Nothing leaves your phone unless you send it, and before it does, the hidden location, time and phone details inside the photo are removed.</p>'+
+  '<p><button id="lensnew">◎ Take a picture</button></p><div id="lensg"></div>';
+ overlayOpen('askp');$('lensnew').onclick=function(){overlayClose();lensShoot()};
+ lensAll().then(function(all){var mine=all.filter(function(p){return ch==null||p.chapter===ch}),h='';
+  if(!mine.length)h='<p>Nothing kept here yet.</p>';
+  mine.forEach(function(p,k){h+='<p><img alt="" style="max-width:100%;border-radius:10px" src="'+URL.createObjectURL(p.blob)+'"><br><button data-ls="'+k+'">⇪ Share</button></p>'});   /* "Ask Jedidiah about this" returns when his door can see pictures (it takes text only, 4 KB) */
+  $('lensg').innerHTML=h;
+  [].forEach.call($('lensg').querySelectorAll('[data-lk]'),function(b){b.onclick=function(){LENS.att=mine[+b.getAttribute('data-lk')].blob;overlayClose();
+   $('askq').placeholder='Ask Jedidiah about your picture';askMode(true);$('askq').focus()}});
+  /* SHARE WHERE THEY CHOOSE (founder 24 Nov 2026: "maybe they dont want to share to aid but to their church or someone else"): the phone's own
+     share sheet - messages, email, their church group. AID is not in that path. Phones without it save the picture instead. */
+  /* each picture is cleaned as soon as the lens opens, so the Share tap itself opens the phone's share sheet (phones only allow that on a fresh tap) */
+  mine.forEach(function(p){lensClean(p.blob).then(function(b){p.clean=b})});
+  [].forEach.call($('lensg').querySelectorAll('[data-ls]'),function(b){b.onclick=function(){var p=mine[+b.getAttribute('data-ls')];
+   if(!p.clean){speak(['One moment - the picture is being made safe to share.','Tap Share again.'],!A.paused);return}
+   var f=new File([p.clean],'genesis'+(p.chapter?'-'+p.chapter:'')+'-lens.jpg',{type:'image/jpeg'}),t=p.chapter?'From Genesis '+p.chapter:'From Genesis';
+   if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:t,text:t}).catch(function(){});
+   else{var a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;a.click()}}})}).catch(function(){$('lensg').innerHTML='<p>This phone cannot keep pictures for this page.</p>'})}
+function lensShoot(){var i=document.createElement('input');i.type='file';i.accept='image/*';i.setAttribute('capture','environment');
+ i.onchange=function(){var f=i.files&&i.files[0];if(!f)return;var ch=idx>=0?CH[idx].chapter:null;
+  lensKeep(f,ch).then(function(){speak(['Kept on your phone'+(ch?' with Genesis '+ch:'')+'.','Only you can see it.'],!A.paused)})
+  .catch(function(){speak(['Your phone would not keep the picture.','Listening goes on.'],!A.paused)})};i.click()}
+function lensTap(){lensShow()}
 function sendVoice(b64,mime,was){if(!M||!M.ask_url){speak(['Jedidiah cannot be reached from this page.','Listening works without him.'],was);return}
  $('cap').textContent='Jedidiah is hearing you…';wait=true;
  timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',question:'(spoken)',audio:b64,mime:mime,history:HIST.slice(-6)})},240000)
