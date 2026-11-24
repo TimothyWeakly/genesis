@@ -323,9 +323,9 @@ var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)},GRID_BOTTOM=118;
  '#twelve button.hide{visibility:hidden;pointer-events:none}'+
  '.bar{z-index:5}#sheet,#askp{z-index:10}@media (orientation:landscape){#twelve{grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr)}}';
  document.head.appendChild(st);
- var W=[['⏮','back',function(){$('prev').onclick()}],['▶','play',function(){audioFlow();$('start').style.display='none';if(idx<0){load(0,0,true);return}A.paused?A.play():A.pause()},'sp'],
-  ['⏭','next',function(){$('next').onclick()}],['↺','15 s',function(){$('back').onclick()}],['■','stop',function(){A.pause();A.currentTime=0}],
-  ['↻','15 s',function(){$('fwd').onclick()}],['♩','mic',micTap],['☰','chapters',function(){$('listBtn').onclick()}],['⤓','ingest',ingest],
+ var W=[['⏮','back',function(){$('prev').onclick()}],['▶','play',function(){audioFlow();$('start').style.display='none';if(idx<0){load(0,0,true);return}if(A.paused)A.play();else{A.pause();A.currentTime=0;emergeAll(false)}},'sp'],
+  ['⏭','next',function(){$('next').onclick()}],['↺','15 s',function(){$('back').onclick()},'hide emerge'],['','',null],   /* stop lives in the play button now (founder 24 Nov 2026: "if i hit play it changes to stop") */
+  ['↻','15 s',function(){$('fwd').onclick()},'hide emerge'],['♩','mic',micTap],['☰','chapters',function(){$('listBtn').onclick()}],['⤓','ingest',ingest],
   ['✕','cancel',cancelIngest,'hide'],['◎','lens',lensTap],['⌂','home screen',homeScreen,'hide']];   /* THE READER'S LENS (founder 24 Nov 2026: "a mic...witness lens and an ai that can reason in that"): the reader's own, kept only on their phone */   /* the empty blocks: cancel emerges while ingesting; home screen emerges when it is in */   /* founder 20 Nov 2026: words, ask, answer and witness removed; ingest added. The last row is only fog - the twelve channels still breathe */
  var grid=document.createElement('div');grid.id='twelve';
  W.forEach(function(w,k){var b=document.createElement('button');b.innerHTML='<span class="g">'+w[0]+'</span><small>'+w[1]+'</small>';if(w[3])b.className=w[3];
@@ -359,6 +359,12 @@ var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)},GRID_BOTTOM=118;
   b.onclick=function(e){e.stopPropagation();if(e.detail===0)fire()};   /* keyboard / screen-reader activation still works */
   b.style.touchAction='none';grid.appendChild(b)});
  document.body.appendChild(grid);
+ /* THEY EMERGE WITH PLAY (founder 24 Nov 2026: "we dont need the 15 sec on each side yet that emerges" / "stop and play emerge together"):
+    15 s back, stop and 15 s forward appear only once Genesis is playing; stop lets them go again */
+ function emergeAll(on){[].forEach.call(grid.querySelectorAll('button.emerge'),function(b){b.classList.toggle('hide',!on)})}
+ var spb=grid.querySelector('button.sp');
+ function playFace(on){spb.querySelector('.g').textContent=on?'■':'▶';spb.querySelector('small').textContent=on?'stop':'play';spb.setAttribute('aria-label',on?'stop':'play')}
+ A.addEventListener('play',function(){emergeAll(true);playFace(true)});A.addEventListener('pause',function(){playFace(false)});A.addEventListener('ended',function(){playFace(false)});
  (function swell(){for(var k=0;k<12;k++)grid.children[k].style.setProperty('--e',AF.e[k].toFixed(3));requestAnimationFrame(swell)})();
  A.addEventListener('play',function(){grid.children[1].querySelector('.g').textContent='❚❚'});A.addEventListener('pause',function(){grid.children[1].querySelector('.g').textContent='▶'})})();
 /* INGEST (founder 20 Nov 2026: "the offline... buried ... an ingest button, simple"): one touch takes all of Genesis into this phone -
