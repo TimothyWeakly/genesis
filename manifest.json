@@ -254,142 +254,161 @@
    "title": "The Cup of the Wrestling",
    "file": "audio/genesis_32.mp3?v=5f528786",
    "movement": 5,
-   "next": null
+   "next": null,
+   "text": "text/genesis_32.json?v=ecaaf77d"
   },
   {
    "chapter": 33,
    "title": "The Cup of Reconciliation",
    "file": "audio/genesis_33.mp3?v=36c68b9b",
    "movement": 5,
-   "next": null
+   "next": null,
+   "text": "text/genesis_33.json?v=7b03774c"
   },
   {
    "chapter": 34,
    "title": "The Cup of Violence",
    "file": "audio/genesis_34.mp3?v=20540847",
    "movement": 5,
-   "next": null
+   "next": null,
+   "text": "text/genesis_34.json?v=a5908f42"
   },
   {
    "chapter": 35,
    "title": "The Cup of Return",
    "file": "audio/genesis_35.mp3?v=ef482a72",
    "movement": 5,
-   "next": null
+   "next": null,
+   "text": "text/genesis_35.json?v=3b6203c2"
   },
   {
    "chapter": 36,
    "title": "The Cup of the Other Line",
    "file": "audio/genesis_36.mp3?v=171e2a70",
    "movement": 5,
-   "next": null
+   "next": null,
+   "text": "text/genesis_36.json?v=2feb4a80"
   },
   {
    "chapter": 37,
    "title": "The Cup of Betrayal",
    "file": "audio/genesis_37.mp3?v=c41d75c9",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_37.json?v=7eccc696"
   },
   {
    "chapter": 38,
    "title": "The Cup of the Scandal",
    "file": "audio/genesis_38.mp3?v=d4b32804",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_38.json?v=9eec8f2a"
   },
   {
    "chapter": 39,
    "title": "The Cup of Integrity",
    "file": "audio/genesis_39.mp3?v=ac785a1a",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_39.json?v=06cc772b"
   },
   {
    "chapter": 40,
    "title": "The Cup of Waiting",
    "file": "audio/genesis_40.mp3?v=b2a68995",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_40.json?v=ec585403"
   },
   {
    "chapter": 41,
    "title": "The Cup of Elevation",
    "file": "audio/genesis_41.mp3?v=10cdc7b7",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_41.json?v=5680131c"
   },
   {
    "chapter": 42,
    "title": "The Cup of Testing",
    "file": "audio/genesis_42.mp3?v=38adda4c",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_42.json?v=11e34aa9"
   },
   {
    "chapter": 43,
    "title": "The Cup of Yielding",
    "file": "audio/genesis_43.mp3?v=754a972e",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_43.json?v=b3fba525"
   },
   {
    "chapter": 44,
    "title": "The Silver Cup",
    "file": "audio/genesis_44.mp3?v=c1fb2b84",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_44.json?v=dec19261"
   },
   {
    "chapter": 45,
    "title": "The Cup of Revelation",
    "file": "audio/genesis_45.mp3?v=9b3849c8",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_45.json?v=982cc48c"
   },
   {
    "chapter": 46,
    "title": "The Cup of Descent",
    "file": "audio/genesis_46.mp3?v=7c6cef5b",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_46.json?v=495fcc45"
   },
   {
    "chapter": 47,
    "title": "The Cup of Sojourning",
    "file": "audio/genesis_47.mp3?v=555b5dff",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_47.json?v=4a5ba564"
   },
   {
    "chapter": 48,
    "title": "The Cup of the Crossing",
    "file": "audio/genesis_48.mp3?v=bb875883",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_48.json?v=a90d32ee"
   },
   {
    "chapter": 49,
    "title": "The Cup of Twelve",
    "file": "audio/genesis_49.mp3?v=249efe74",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_49.json?v=a0267dc7"
   },
   {
    "chapter": 50,
    "title": "The Cup of Waiting (final)",
    "file": "audio/genesis_50.mp3?v=3688e477",
    "movement": 6,
-   "next": null
+   "next": null,
+   "text": "text/genesis_50.json?v=95f5caf4"
   }
  ],
  "movements": {
-  "1": "Creation · Ordered Beginning",
-  "2": "Fracture · The Fall",
-  "3": "Judgment · Preservation · Covenant",
-  "4": "Call · Pilgrimage · Promise",
-  "5": "Struggle · Transformation",
-  "6": "Providence · Reconciliation · Promise Carried Forward"
+  "1": "Creation \u00b7 Ordered Beginning",
+  "2": "Fracture \u00b7 The Fall",
+  "3": "Judgment \u00b7 Preservation \u00b7 Covenant",
+  "4": "Call \u00b7 Pilgrimage \u00b7 Promise",
+  "5": "Struggle \u00b7 Transformation",
+  "6": "Providence \u00b7 Reconciliation \u00b7 Promise Carried Forward"
  },
  "ask_url": "https://genesis.aidgwesptspl.com/ask"
 }

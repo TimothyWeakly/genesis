@@ -52,7 +52,9 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 /* founder 20 Nov 2026: 'i want the words coming from the sphere' - the line the words pour into sits just under the sphere */
 #cap{position:fixed;left:12px;right:12px;top:calc((100vh - 118px)*7/8);transform:translateY(-50%);z-index:3;pointer-events:none;min-height:0;font-size:22px;line-height:1.5;letter-spacing:.02em;word-spacing:.12em;   /* founder 24 Nov 2026: "make words fill in more space at bottom ... room to breathe" */color:#f6ead0;text-shadow:0 0 14px rgba(232,192,106,.55),0 0 28px rgba(255,170,215,.3)}
 #askf{display:flex;gap:8px;align-items:center;min-height:3.1em}#askf[hidden]{display:none}
-@media (orientation:landscape){#cap{top:calc((100vh - 118px)*5/6)}}   /* founder 24 Nov 2026: the emerging words use the bottom row's space */
+@media (orientation:landscape){#cap{top:calc((100vh - 118px)*5/6)}}
+body.answering #cap{top:calc((100vh - 118px)*.38);bottom:128px;transform:none;display:flex;align-items:center;justify-content:center;font-size:21px;line-height:1.55;overflow-y:auto;padding:0 6px}
+body.answering #twelve button>.g,body.answering #twelve button>small{opacity:.07!important;transition:opacity .8s}   /* founder 24 Nov 2026: the emerging words use the bottom row's space */
 #askq{flex:1;background:none;border:0;outline:0;color:var(--text);font:inherit;font-size:16px;min-width:0}
 #asks{background:var(--gold);color:#140c02;border:0;border-radius:18px;width:36px;height:36px;font-size:16px;cursor:pointer}
 #capsrc{text-align:center;font-size:11px;letter-spacing:.14em;color:var(--teal);margin:3px 0 6px;min-height:1.1em}
@@ -151,10 +153,19 @@ function launch(text,t){var r=$('cap').getBoundingClientRect();tgt={x:(r.left+r.
 /* Jedidiah answering: the narration waits, and the Sphere pours his answer the same way it pours the chapter, one sentence at a
    time, with the chapter's own words he relies on shown in quotation marks. Then the narration goes on. */
 var J=null,tgt=null;
-function speak(parts,resume){J={p:parts,i:-1,until:0,resume:resume};$('capsrc').textContent='Jedidiah'}
-function jTick(t){if(!J)return;if(t<J.until)return;J.i++;
- if(J.i>=J.p.length){var r=J.resume;J=null;pi=-1;$('cap').textContent='';$('capsrc').textContent='';if(r)A.play().catch(function(){});return}
- var s=J.p[J.i];$('cap').textContent=s;J.until=t+Math.max(2600,s.split(' ').length*360);launch(s,t)}
+/* JEDIDIAH'S REPLY HAS ROOM AND A VOICE (founder 24 Nov 2026: "make the replies ... fill up the space of the phone...more readable....have it
+   start higher.....it shouldnt be bleeding into the prompt" / "why cant the same genesis narrator voice be the voice of jed"). A real answer
+   uses the space from the middle of the screen down to just above the ask bar, in larger type, and the buttons dim while he speaks. When the
+   laptop sends his words in the Genesis narrator's voice, they are heard as they are shown - the same words, nothing added. */
+var JV=null;
+function speak(parts,resume,voice){if(JV){JV.pause();JV=null}
+ J={p:parts,i:-1,until:0,resume:resume,big:voice!==undefined};$('capsrc').textContent='Jedidiah';document.body.classList.toggle('answering',J.big);
+ if(voice&&voice.data){try{JV=new Audio('data:'+voice.mime+';base64,'+voice.data);JV.play().catch(function(){JV=null})}catch(e){JV=null}}}
+function jTick(t){if(!J)return;if(t<J.until)return;
+ if(J.i+1>=J.p.length&&JV&&!JV.ended&&!JV.paused){J.until=t+400;return}   /* the last words stay until his voice has finished */
+ J.i++;
+ if(J.i>=J.p.length){var r=J.resume;J=null;JV=null;document.body.classList.remove('answering');$('cap').style.whiteSpace='';pi=-1;$('cap').textContent='';$('capsrc').textContent='';if(r)A.play().catch(function(){});return}
+ var s=J.p[J.i];$('cap').textContent=J.big?J.p.slice(0,J.i+1).join('\n\n'):s;if(J.big){$('cap').style.whiteSpace='pre-line';$('cap').scrollTop=1e6}else $('cap').style.whiteSpace='';J.until=t+Math.max(2600,s.split(' ').length*360);launch(s,t)}
 function capTick(t){   /* which phrase is being spoken: runs on the audio's own time updates, so the text keeps up even when the picture is not being drawn */
  if(J){jTick(t);return}
  if(!T||!capOn||wait)return;var p=T.phrases,ct=A.currentTime,i=pi<0?0:pi;
@@ -289,9 +300,9 @@ $('askf').onsubmit=function(e){e.preventDefault();var q=$('askq').value.trim(),c
  .then(function(r){return r.json()}).then(function(j){if(gone)return;clearTimeout(give);gone=true;clearInterval(tick);wait=false;$('prompt').classList.remove('asking');
   var h='<p>'+esc(j.answer||'')+'</p>',parts=(j.answer||'').match(/[^.!?]+[.!?]+["”']?|[^.!?]+$/g)||[];parts=parts.map(function(s){return s.trim()}).filter(Boolean);
   (j.claims||[]).forEach(function(k){h+='<p class="q">“'+esc(k.quote)+'” — Genesis '+esc(k.chapter)+'</p>';parts.push('“'+k.quote+'” — Genesis '+k.chapter)});
-  (j.unknowns||[]).forEach(function(u){h+='<p class="q">Unknown: '+esc(u)+'</p>';parts.push('Unknown: '+u)});
+  (j.unknowns||[]).forEach(function(u){h+='<p class="q">'+esc(u)+'</p>';parts.push(u)});   /* founder 24 Nov 2026 "no nonsense": Genesis' own silences, said plainly (the voice says the same words) */
   lastA='<p class="q">You asked: '+esc(q)+'</p>'+h;HIST.push({q:q,a:j.answer||''});$('askq').placeholder='Ask, or correct Jedidiah';$('ask').hidden=false;
-  if(parts.length)speak(parts,was);else speak(['Jedidiah is not reachable right now.','Nothing was made up in his place.'],was)})
+  if(parts.length)speak(parts,was,j.voice||null);else speak(['Jedidiah is not reachable right now.','Nothing was made up in his place.'],was)})
  .catch(fail)};
 $('ask').onclick=function(){$('askp').querySelector('h3').textContent='Ask Jedidiah';$('askb').innerHTML=lastA;overlayOpen('askp')};
 $('askx').onclick=overlayClose;
