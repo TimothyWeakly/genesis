@@ -249,6 +249,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
  '<small id="keepst">sphere, words and narration - opens without internet. Jedidiah is not in the kept copy: asking him needs internet.</small>'+
  '<a id="dlzip" href="https://github.com/TimothyWeakly/genesis/releases/download/narration-v1/AID_Genesis_Narration.zip">\u2913 Download all the narration (audio only, no Jedidiah, 256 MB)</a>'+
  '<button id="micchange">\u2669 How Jedidiah hears you</button>'+
+ '<button id="jedkeep">\u2913 Keep Jedidiah on this phone</button><small id="jedst">free - a small Jedidiah that reasons only over Genesis, on your own phone; nothing you ask leaves it</small>'+
  /* YOUR SAFETY HERE (founder 20 Nov 2026: "explain all the safety on the phone and permissions and all that") - plain, complete, no fine print */
  '<details id="safety"><summary>Your safety on this page</summary>'+
  '<p><b>Nothing about you is taken.</b> No sign-in, no account, no name, no tracking. The page does not know who you are.</p>'+
@@ -257,6 +258,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
  '<p><b>Your questions.</b> When you ask Jedidiah, your question and his answer are kept, with the time and nothing else - no name, no phone, no place - so the founder can see where Jedidiah helps or fails and make him better.</p>'+
  '<p><b>The heartbeat in the sphere</b> is the founder\u2019s own, shared by his choice. Nothing of your heart or body is read here.</p>'+
  '<p><b>Keeping Genesis on your phone</b> stores it in your browser only. Clear it any time by clearing this site\u2019s data.</p>'+
+ '<p><b>Jedidiah on your phone</b> (only if you choose it) is a small open AI model downloaded once (about 1 GB) into your browser. He thinks with your phone\u2019s own chip, reasons only over the Genesis text, and checks every quote word for word. Your questions to him stay on your phone. One tap removes him.</p>'+
  '<p><b>Jedidiah</b> answers only from the Genesis text. He never judges you, never takes sides, and never claims to be more than a servant of the text.</p></details>';
  $('list').parentNode.insertBefore(box,$('list'));
  /* founder 20 Nov 2026: "download works... but does no good if user cant find it" - the sphere says exactly where it went and how to open it */
@@ -293,8 +295,49 @@ $('prompt').onkeydown=function(e){if(e.target===$('prompt')&&(e.key==='Enter'||e
    is asleep. No AI reads it aloud: it is the Genesis recording itself. */
 var READQ=/\b(read|begin|start|play|recite|open|listen to)\b[^0-9]{0,40}?(?:genesis|gen|chapter|ch\.?)\s*(\d{1,2})\b|^\s*(?:genesis|gen|chapter)\s*(\d{1,2})\s*[.!?]?\s*$/i;
 function playChapter(n){var i=-1;CH.forEach(function(c,k){if(c.chapter===n)i=k});if(i<0)return false;audioFlow();load(i,0,true);return true}
+/* JEDIDIAH ON THE READER'S OWN PHONE (founder 24 Nov 2026: "some jed ai agent download with genesis...like if they want a mini jed...it be free
+   ...taken off whenever...it should be easy to get it to just reason over what was given"). Only if the reader chooses it: a small open model
+   runs inside their browser on their phone's own chip (WebGPU), reasons only over the Genesis chapters, and every quote must match the text
+   word for word or it is not shown. Questions to him stay on the phone. When he cannot stand an answer on Genesis words, the question goes on
+   to Jedidiah on the founder's laptop, as before. One tap removes him. */
+var JL={on:false,eng:null,loading:false,skip:false,model:'Qwen2.5-1.5B-Instruct-q4f16_1-MLC',lib:'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm',txt:{}};
+try{JL.on=localStorage.getItem('jed_local')==='1'}catch(e){}
+function jlFace(){var b=$('jedkeep'),s=$('jedst');if(!b)return;b.textContent=JL.on?'✕ Remove Jedidiah from this phone':'⤓ Keep Jedidiah on this phone';
+ s.textContent=JL.on?(JL.eng?'Jedidiah is on this phone: he answers here first, from Genesis only':'kept on this phone - he wakes when you ask'):'free - a small Jedidiah that reasons only over Genesis, on your own phone; nothing you ask leaves it'}
+function jlLoad(){if(JL.eng)return Promise.resolve(JL.eng);if(JL.loading)return JL.loading;
+ if(!navigator.gpu)return Promise.reject(new Error('nogpu'));
+ JL.loading=import(JL.lib).then(function(w){return w.CreateMLCEngine(JL.model,{initProgressCallback:function(p){var s=$('jedst');if(s)s.textContent='Jedidiah is coming onto this phone… '+Math.round((p.progress||0)*100)+'%'}})})
+  .then(function(eng){JL.eng=eng;JL.loading=false;jlFace();return eng},function(e){JL.loading=false;throw e});return JL.loading}
+function jlChapter(n){if(JL.txt[n])return Promise.resolve(JL.txt[n]);var c=CH.filter(function(x){return x.chapter===n})[0];if(!c||!c.text)return Promise.resolve('');
+ return fetch(c.text).then(function(r){return r.json()}).then(function(j){JL.txt[n]=j.phrases.map(function(p){return p[1]}).join(' ');return JL.txt[n]}).catch(function(){return ''})}
+function jlNorm(s){return String(s).toLowerCase().replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/\s+/g,' ').trim()}
+function jlAsk(q,c){   /* -> parts to speak, or null when he cannot stand it on Genesis words */
+ var named=(q.match(/\b(?:genesis|gen|chapter|ch\.?)\s*(\d{1,2})\b/ig)||[]).map(function(m){return +m.replace(/\D/g,'')}).filter(function(n){return n>=1&&n<=50});
+ var want=named.concat(c?[c.chapter]:[]).filter(function(n,i,a){return a.indexOf(n)===i}).slice(0,2);if(!want.length)want=[1];
+ return jlLoad().then(function(eng){return Promise.all(want.map(jlChapter)).then(function(tx){
+  var ctx=want.map(function(n,i){return '[Genesis '+n+']\n'+tx[i]}).join('\n\n');
+  return eng.chat.completions.create({temperature:0.2,max_tokens:400,messages:[
+   {role:'system',content:'You are Jedidiah, a servant of the Genesis text, on the reader’s own phone. Answer ONLY from the chapters given. Never use outside knowledge. Never judge. Reply with ONE JSON object only: {"answer": short plain answer, "claims": [{"chapter": number, "quote": exact words copied from that chapter}]}. If the chapters do not answer it, reply {"answer": "", "claims": []}.\n\n'+ctx},
+   {role:'user',content:q}]}).then(function(r){var t=(r.choices[0].message.content||''),m=t.match(/\{[\s\S]*\}/),j;try{j=JSON.parse(m?m[0]:t)}catch(e){return null}
+   var ok=(j.claims||[]).filter(function(k){var i=want.indexOf(+k.chapter);return i>=0&&k.quote&&k.quote.length>=8&&jlNorm(tx[i]).indexOf(jlNorm(k.quote))>=0});
+   if(!j.answer||!ok.length)return null;   /* no quote passed the word-for-word check: nothing is shown from him */
+   return [String(j.answer)].concat(ok.map(function(k){return '“'+k.quote+'” — Genesis '+k.chapter}))})})})}
+setTimeout(function(){jlFace();var b=$('jedkeep');if(!b)return;b.onclick=function(){
+ if(JL.on){JL.on=false;try{localStorage.removeItem('jed_local')}catch(e){}if(JL.eng&&JL.eng.unload)JL.eng.unload();JL.eng=null;
+  if(window.caches)caches.keys().then(function(ks){ks.forEach(function(k){if(/webllm|mlc/i.test(k))caches.delete(k)})});jlFace();
+  overlayClose();speak(['Jedidiah is removed from this phone.','Asking still works through the founder’s laptop.'],!A.paused);return}
+ if(!navigator.gpu){overlayClose();speak(['This phone cannot run Jedidiah on its own chip yet.','Asking still works through the founder’s laptop.'],!A.paused);return}
+ if(!confirm('Keep Jedidiah on this phone?\n\nA small open AI model (about 1 GB) downloads once into your browser. Use Wi-Fi. He thinks with your phone’s own chip, only over Genesis, and your questions stay on your phone. Free. One tap removes him.'))return;
+ JL.on=true;try{localStorage.setItem('jed_local','1')}catch(e){}jlFace();
+ jlLoad().then(function(){speak(['Jedidiah is on your phone now.','Ask him anything in Genesis.'],!A.paused)},
+  function(){JL.on=false;try{localStorage.removeItem('jed_local')}catch(e){}jlFace();speak(['Jedidiah could not come onto this phone.','Asking still works through the founder’s laptop.'],!A.paused)})}},0);
 $('askf').onsubmit=function(e){e.preventDefault();var q=$('askq').value.trim(),c=idx>=0?CH[idx]:null;if(!q)return;$('askq').value='';$('askq').blur();askMode(false);
  var rm=q.match(READQ);if(rm&&playChapter(+(rm[2]||rm[3]))){HIST.push({q:q,a:'(the narration of Genesis '+(rm[2]||rm[3])+' played)'});return}
+ if(JL.on&&!JL.skip&&!LENS.att){var wasL=!A.paused;A.pause();wait=true;note('Jedidiah on your phone is reading Genesis…');
+  jlAsk(q,c).then(function(parts){wait=false;if(parts){HIST.push({q:q,a:parts[0]});speak(parts,wasL,null);return}
+   if(wasL)A.play().catch(function(){});JL.skip=true;$('askq').value=q;$('askf').onsubmit({preventDefault:function(){}})},
+   function(){wait=false;if(wasL)A.play().catch(function(){});JL.skip=true;$('askq').value=q;$('askf').onsubmit({preventDefault:function(){}})});return}
+ JL.skip=false;
  var was=!A.paused,att=LENS.att;LENS.att=null;$('askq').placeholder='Ask, or correct Jedidiah';   /* a lens picture goes only with the one question it was chosen for */
  if(!M||!M.ask_url){A.pause();speak(['Jedidiah cannot be reached from this page yet.','Listening works without him.'],was);return}
  A.pause();wait=true;$('prompt').classList.add('asking');launch('',performance.now());note('Looking for Jedidiah…');var t0=Date.now(),tick=null;
