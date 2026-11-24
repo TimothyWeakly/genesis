@@ -50,7 +50,7 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 #cap{min-height:3.1em;display:flex;align-items:center;justify-content:center;text-align:center;font-size:17px;line-height:1.35;color:var(--text);padding:0 4px;transition:opacity .35s}
 #cap:empty::before{content:''}
 /* founder 20 Nov 2026: 'i want the words coming from the sphere' - the line the words pour into sits just under the sphere */
-#cap{position:fixed;left:18px;right:18px;top:calc((100vh - 118px)*7/8);transform:translateY(-50%);z-index:3;pointer-events:none;min-height:0;font-size:18px;color:#f6ead0;text-shadow:0 0 14px rgba(232,192,106,.55),0 0 28px rgba(255,170,215,.3)}
+#cap{position:fixed;left:12px;right:12px;top:calc((100vh - 118px)*7/8);transform:translateY(-50%);z-index:3;pointer-events:none;min-height:0;font-size:22px;line-height:1.5;letter-spacing:.02em;word-spacing:.12em;   /* founder 24 Nov 2026: "make words fill in more space at bottom ... room to breathe" */color:#f6ead0;text-shadow:0 0 14px rgba(232,192,106,.55),0 0 28px rgba(255,170,215,.3)}
 #askf{display:flex;gap:8px;align-items:center;min-height:3.1em}#askf[hidden]{display:none}
 @media (orientation:landscape){#cap{top:calc((100vh - 118px)*5/6)}}   /* founder 24 Nov 2026: the emerging words use the bottom row's space */
 #askq{flex:1;background:none;border:0;outline:0;color:var(--text);font:inherit;font-size:16px;min-width:0}
@@ -176,7 +176,7 @@ function pour(t,cx,cy){
    fx.globalAlpha=.25+.75*z;fx.fillStyle=q%6?'rgb('+col+')':'#ffffff';fx.beginPath();fx.arc(p[0],p[1],DPR*(.7+1.7*z),0,6.283);fx.fill()}
   fx.globalAlpha=1}
  if(!capOn||!fly)return;var n=fly.w.length,gap=Math.min(95,700/n),done=true;fx.textAlign='center';fx.shadowColor='rgba('+col+',.95)';
- for(var k=0;k<n;k++){var u=(t-fly.t0-k*gap)/900;if(u<0){done=false;continue}if(u>=1)continue;done=false;var e=u*u*(3-2*u),tx=fly.x+(k-(n-1)/2)*15*DPR,
+ for(var k=0;k<n;k++){var u=(t-fly.t0-k*gap)/900;if(u<0){done=false;continue}if(u>=1)continue;done=false;var e=u*u*(3-2*u),tx=fly.x+(k-(n-1)/2)*Math.min(24,(innerWidth-40)/Math.max(1,n))*DPR,
   sw=Math.sin(u*3.1416)*W*.02*Math.sin(k*1.7+t*.002),p=path(e,ox,oy,tx,fly.y,sw,((k%5)-2)*.42);
   fx.font='600 '+((8+10*e)*DPR).toFixed(1)+'px system-ui,-apple-system,Segoe UI,Roboto,sans-serif';fx.shadowBlur=DPR*(16-9*e);
   fx.globalAlpha=u<.12?u/.12:u<.8?1:(1-u)/.2;fx.fillStyle=J?'#b5efe6':'#f6dc96';fx.fillText(fly.w[k],p[0],p[1])}
@@ -362,6 +362,20 @@ var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)},GRID_BOTTOM=118;
  /* THEY EMERGE WITH PLAY (founder 24 Nov 2026: "we dont need the 15 sec on each side yet that emerges" / "stop and play emerge together"):
     15 s back, stop and 15 s forward appear only once Genesis is playing; stop lets them go again */
  function emergeAll(on){[].forEach.call(grid.querySelectorAll('button.emerge'),function(b){b.classList.toggle('hide',!on)})}
+ /* CALM (founder 24 Nov 2026: "when audio starts after like 5 seconds make the inputs go away and its just art flow and words and sphere...
+    one touch inputs come back"). While Genesis plays and nobody touches the screen for 5 s, the buttons and the ask bar fade out; the art
+    flow, the sphere and the words stay. The first touch only brings them back - it never presses anything - and the 5 s start again. */
+ var calmSt=document.createElement('style');calmSt.textContent='#twelve button>.g,#twelve button>small,#prompt{transition:opacity 1.2s ease}'+
+  'body.calm #twelve button>.g,body.calm #twelve button>small,body.calm #prompt{opacity:0!important}body.calm #prompt{pointer-events:none}';
+ document.head.appendChild(calmSt);
+ var calmT=0;function calmSoon(){clearTimeout(calmT);calmT=setTimeout(function(){if(!A.paused&&!wait&&!J&&$('askp').className!=='open'&&!(document.activeElement&&document.activeElement.id==='askq'))document.body.classList.add('calm');else calmSoon()},5000)}
+ var swallow=0;   /* the whole waking touch (down, up, click) is swallowed so it never presses a button */
+ function eat(e){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation()}
+ ['pointerdown','touchstart','mousedown','keydown'].forEach(function(ev){document.addEventListener(ev,function(e){
+  if(document.body.classList.contains('calm')){document.body.classList.remove('calm');swallow=performance.now()+700;eat(e)}
+  if(!A.paused)calmSoon()},{capture:true,passive:false})});
+ ['pointerup','touchend','mouseup','click'].forEach(function(ev){document.addEventListener(ev,function(e){if(performance.now()<swallow)eat(e)},{capture:true,passive:false})});
+ A.addEventListener('play',calmSoon);A.addEventListener('pause',function(){clearTimeout(calmT);document.body.classList.remove('calm')});A.addEventListener('ended',function(){clearTimeout(calmT);document.body.classList.remove('calm')});
  var spb=grid.querySelector('button.sp');
  function playFace(on){spb.querySelector('.g').textContent=on?'■':'▶';spb.querySelector('small').textContent=on?'stop':'play';spb.setAttribute('aria-label',on?'stop':'play')}
  A.addEventListener('play',function(){emergeAll(true);playFace(true)});A.addEventListener('pause',function(){playFace(false)});A.addEventListener('ended',function(){playFace(false)});
