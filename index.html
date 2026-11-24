@@ -158,10 +158,19 @@ var J=null,tgt=null;
    uses the space from the middle of the screen down to just above the ask bar, in larger type, and the buttons dim while he speaks. When the
    laptop sends his words in the Genesis narrator's voice, they are heard as they are shown - the same words, nothing added. */
 var JV=null;
+/* one voice at a time: if Genesis is started while Jedidiah is speaking, he stops and his words clear - they never talk over each other */
+A.addEventListener('play',function(){if(JV){JV.pause();JV=null}if(J&&J.big){J=null;document.body.classList.remove('answering');$('cap').style.whiteSpace='';$('cap').textContent='';$('capsrc').textContent=''}});
 function speak(parts,resume,voice){if(JV){JV.pause();JV=null}
  J={p:parts,i:-1,until:0,resume:resume,big:voice!==undefined};$('capsrc').textContent='Jedidiah';document.body.classList.toggle('answering',J.big);
  if(voice&&voice.data){try{JV=new Audio('data:'+voice.mime+';base64,'+voice.data);JV.play().catch(function(){JV=null})}catch(e){JV=null}}}
 function jTick(t){if(!J)return;if(t<J.until)return;
+ /* THE WORDS FOLLOW HIS VOICE (founder 24 Nov 2026: "the audio is overlapping in explaining...loading itself while still talking"): while his
+    voice plays, the next sentence appears only when the voice reaches it (each sentence's share of the recording, by its words) - never
+    on a clock of its own. Before the voice has loaded, the first sentence waits with it. */
+ if(JV&&!JV.ended&&!JV.error){var d=JV.duration;
+  if(!isFinite(d)||!d){if(J.i>=0||JV.readyState<1){J.until=t+150;if(J.i>=0)return}}
+  else if(J.i>=0){var w=J.p.map(function(s){return s.split(/\s+/).length}),tot=w.reduce(function(a,b){return a+b},0),end=0;
+   for(var k=0;k<=J.i;k++)end+=w[k];if(JV.currentTime<d*end/tot){J.until=t+150;return}}}
  if(J.i+1>=J.p.length&&JV&&!JV.ended&&!JV.paused){J.until=t+400;return}   /* the last words stay until his voice has finished */
  J.i++;
  if(J.i>=J.p.length){var r=J.resume;J=null;JV=null;document.body.classList.remove('answering');$('cap').style.whiteSpace='';pi=-1;$('cap').textContent='';$('capsrc').textContent='';if(r)A.play().catch(function(){});return}
@@ -450,24 +459,37 @@ function micChoose(then){var box=document.createElement('div');box.id='micway';
   if(b.dataset.w==='x')return;try{localStorage.setItem('gen_mic_way',b.dataset.w)}catch(e){}then()}})}
 function phoneVoice(){var R=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!R){speak(['This phone has no voice typing here.','Choose Jedidiah’s home in the chapters list, or type your question.'],!A.paused);return}
- var was=!A.paused;A.pause();var sr=new R();MIC.sr=sr;sr.lang='en-US';sr.interimResults=false;$('cap').textContent='Listening (your phone’s voice typing)…';
- sr.onresult=function(e){var t=e.results[0][0].transcript;$('askq').value=t;$('askf').requestSubmit?$('askf').requestSubmit():$('askf').onsubmit({preventDefault:function(){}})};
- sr.onerror=function(e){speak(e.error==='not-allowed'?['Your phone said no to the microphone.','To allow it: tap the lock or the dots beside the address,','then Microphone, then Allow, and tap the mic again.']:['I did not catch that.','Tap the mic and try again.'],was)};
- sr.onend=function(){MIC.sr=null};sr.start()}
+ /* THE MIC LETS THEM FINISH (founder 24 Nov 2026: "the mic is glitchy...wont let me speak...i hit mic and it goes to jed auto"): voice typing
+    used to stop at the first pause and send at once. Now it keeps listening - the words appear as they are heard - until the reader taps
+    the mic again (or 60 s pass, or the phone stops it); only then is the whole question sent. */
+ var was=!A.paused;A.pause();var sr=new R();MIC.sr=sr;MIC.said='';MIC.done=false;sr.lang='en-US';sr.interimResults=true;sr.continuous=true;
+ micFace(true);$('cap').textContent='Listening… speak, then tap the mic to send.';
+ sr.onresult=function(e){var fin='',tmp='';for(var i=0;i<e.results.length;i++){if(e.results[i].isFinal)fin+=e.results[i][0].transcript+' ';else tmp+=e.results[i][0].transcript}
+  MIC.said=(fin+tmp).trim();if(MIC.said)$('cap').textContent=MIC.said};
+ sr.onerror=function(e){if(e.error==='no-speech'||e.error==='aborted')return;MIC.done=true;micFace(false);
+  speak(e.error==='not-allowed'?['Your phone said no to the microphone.','To allow it: tap the lock or the dots beside the address,','then Microphone, then Allow, and tap the mic again.']:['I did not catch that.','Tap the mic and try again.'],was)};
+ sr.onend=function(){MIC.sr=null;micFace(false);clearTimeout(MIC.cap);if(MIC.done)return;MIC.done=true;var t=(MIC.said||'').trim();
+  if(!t){speak(['I did not hear anything.','Tap the mic, speak, then tap it again.'],was);return}
+  $('askq').value=t;$('askf').requestSubmit?$('askf').requestSubmit():$('askf').onsubmit({preventDefault:function(){}})};
+ MIC.cap=setTimeout(function(){if(MIC.sr)MIC.sr.stop()},60000);sr.start()}
+/* the mic tile shows what a tap will do: ♩ mic = start, ■ send = stop and send */
+function micFace(on){var b=document.querySelector('#twelve button[aria-label="mic"],#twelve button[aria-label="send"]');if(!b)return;
+ b.querySelector('.g').textContent=on?'■':'♩';b.querySelector('small').textContent=on?'send':'mic';b.setAttribute('aria-label',on?'send':'mic')}
 function micTap(){
  if(MIC.sr){MIC.sr.stop();return}
  if(MIC.rec&&MIC.rec.state==='recording'){MIC.rec.stop();return}
+ if(MIC.starting)return;   /* a second tap while the phone is still opening the mic does not start a second recording */
  var way=micWay();if(!way){micChoose(micTap);return}
  if(way==='phone'){phoneVoice();return}
  if(!navigator.mediaDevices||!window.MediaRecorder){speak(['This phone cannot record here.','Type your question in the prompt instead.'],!A.paused);return}
- var go=function(){navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){var was=!A.paused;A.pause();MIC.chunks=[];
+ var go=function(){MIC.starting=true;navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){MIC.starting=false;var was=!A.paused;A.pause();MIC.chunks=[];
    MIC.rec=new MediaRecorder(st);MIC.rec.ondataavailable=function(e){if(e.data.size)MIC.chunks.push(e.data)};
-   MIC.rec.onstop=function(){st.getTracks().forEach(function(t){t.stop()});wait=false;var blob=new Blob(MIC.chunks,{type:MIC.rec.mimeType||'audio/webm'});
+   MIC.rec.onstop=function(){st.getTracks().forEach(function(t){t.stop()});wait=false;micFace(false);var blob=new Blob(MIC.chunks,{type:MIC.rec.mimeType||'audio/webm'});
     if(blob.size<2000){speak(['I did not hear anything.','Tap the mic, speak, then tap it again.'],was);return}
     var fr=new FileReader();fr.onload=function(){sendVoice(fr.result.split(',')[1],blob.type,was)};fr.readAsDataURL(blob)};
-   MIC.rec.start();wait=true;$('cap').textContent='Listening… tap the mic again when you are done.';
-   setTimeout(function(){if(MIC.rec&&MIC.rec.state==='recording')MIC.rec.stop()},20000)})
-  .catch(function(){speak(['Your phone said no to the microphone.','To allow it: tap the lock or the dots beside the address,','then Microphone, then Allow, and tap the mic again.'],!A.paused)})};
+   MIC.rec.start();wait=true;micFace(true);$('cap').textContent='Listening… speak, then tap the mic to send.';
+   setTimeout(function(){if(MIC.rec&&MIC.rec.state==='recording')MIC.rec.stop()},60000)})
+  .catch(function(){MIC.starting=false;speak(['Your phone said no to the microphone.','To allow it: tap the lock or the dots beside the address,','then Microphone, then Allow, and tap the mic again.'],!A.paused)})};
  if(!MIC.told){MIC.told=true;speak(['To hear you, your phone will ask to let this page use the microphone.','Your voice goes only to Jedidiah’s home, is turned into words there, and is not kept.','Say yes when it asks.'],false);
   setTimeout(go,5200);return}
  go()}
