@@ -50,8 +50,9 @@ input[type=range]{flex:1;accent-color:var(--gold);height:28px}
 #cap{min-height:3.1em;display:flex;align-items:center;justify-content:center;text-align:center;font-size:17px;line-height:1.35;color:var(--text);padding:0 4px;transition:opacity .35s}
 #cap:empty::before{content:''}
 /* founder 20 Nov 2026: 'i want the words coming from the sphere' - the line the words pour into sits just under the sphere */
-#cap{position:fixed;left:18px;right:18px;top:calc((100vh - 118px)/8 + 13vmin + 16px);z-index:3;pointer-events:none;min-height:0;font-size:18px;color:#f6ead0;text-shadow:0 0 14px rgba(232,192,106,.55),0 0 28px rgba(255,170,215,.3)}
+#cap{position:fixed;left:18px;right:18px;top:calc((100vh - 118px)*7/8);transform:translateY(-50%);z-index:3;pointer-events:none;min-height:0;font-size:18px;color:#f6ead0;text-shadow:0 0 14px rgba(232,192,106,.55),0 0 28px rgba(255,170,215,.3)}
 #askf{display:flex;gap:8px;align-items:center;min-height:3.1em}#askf[hidden]{display:none}
+@media (orientation:landscape){#cap{top:calc((100vh - 118px)*5/6)}}   /* founder 24 Nov 2026: the emerging words use the bottom row's space */
 #askq{flex:1;background:none;border:0;outline:0;color:var(--text);font:inherit;font-size:16px;min-width:0}
 #asks{background:var(--gold);color:#140c02;border:0;border-radius:18px;width:36px;height:36px;font-size:16px;cursor:pointer}
 #capsrc{text-align:center;font-size:11px;letter-spacing:.14em;color:var(--teal);margin:3px 0 6px;min-height:1.1em}
@@ -232,7 +233,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
  /* YOUR SAFETY HERE (founder 20 Nov 2026: "explain all the safety on the phone and permissions and all that") - plain, complete, no fine print */
  '<details id="safety"><summary>Your safety on this page</summary>'+
  '<p><b>Nothing about you is taken.</b> No sign-in, no account, no name, no tracking. The page does not know who you are.</p>'+
- '<p><b>Permissions.</b> This page asks for only three things, and only when you choose: the microphone (when you tap the mic), the camera (when you take a picture with the lens - the picture stays on your phone and is never sent), and notifications (when you tap ingest, so your phone can tell you when Genesis is in). If you never tap them, it never asks. You can take it back any time in your browser\u2019s site settings (the lock or dots beside the address).</p>'+
+ '<p><b>Permissions.</b> This page asks for only three things, and only when you choose: the microphone (when you tap the mic), the camera (when you start the light lens - it reads only movement and shows it as light, makes no picture and keeps nothing - or when you take a picture, which stays on your phone unless you share it), and notifications (when you tap ingest, so your phone can tell you when Genesis is in). If you never tap them, it never asks. You can take it back any time in your browser\u2019s site settings (the lock or dots beside the address).</p>'+
  '<p><b>Your voice.</b> You choose: send it to Jedidiah\u2019s home (turned into words on the founder\u2019s own computer, then the recording is deleted), or use your phone\u2019s voice typing (Google on most Android phones, Apple on iPhone - then your words go to them, not to AID).</p>'+
  '<p><b>Your questions.</b> When you ask Jedidiah, your question and his answer are kept, with the time and nothing else - no name, no phone, no place - so the founder can see where Jedidiah helps or fails and make him better.</p>'+
  '<p><b>The heartbeat in the sphere</b> is the founder\u2019s own, shared by his choice. Nothing of your heart or body is read here.</p>'+
@@ -291,7 +292,7 @@ $('askf').onsubmit=function(e){e.preventDefault();var q=$('askq').value.trim(),c
   lastA='<p class="q">You asked: '+esc(q)+'</p>'+h;HIST.push({q:q,a:j.answer||''});$('askq').placeholder='Ask, or correct Jedidiah';$('ask').hidden=false;
   if(parts.length)speak(parts,was);else speak(['Jedidiah is not reachable right now.','Nothing was made up in his place.'],was)})
  .catch(fail)};
-$('ask').onclick=function(){$('askb').innerHTML=lastA;overlayOpen('askp')};
+$('ask').onclick=function(){$('askp').querySelector('h3').textContent='Ask Jedidiah';$('askb').innerHTML=lastA;overlayOpen('askp')};
 $('askx').onclick=overlayClose;
 setInterval(function(){capTick(performance.now())},250);   /* the words keep time even when the picture is not being drawn, and while the narration waits for Jedidiah */
 /* THE TWELVE SECTIONS (founder 20 Nov 2026: "use the same overlay we used for the logos field screen on my phone - 12 sections ... when the
@@ -324,9 +325,9 @@ var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)},GRID_BOTTOM=118;
  '.bar{z-index:5}#sheet,#askp{z-index:10}@media (orientation:landscape){#twelve{grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr)}}';
  document.head.appendChild(st);
  var W=[['⏮','back',function(){$('prev').onclick()}],['▶','play',function(){audioFlow();$('start').style.display='none';if(idx<0){load(0,0,true);return}if(A.paused)A.play();else{A.pause();A.currentTime=0;emergeAll(false)}},'sp'],
-  ['⏭','next',function(){$('next').onclick()}],['↺','15 s',function(){$('back').onclick()},'hide emerge'],['','',null],   /* stop lives in the play button now (founder 24 Nov 2026: "if i hit play it changes to stop") */
-  ['↻','15 s',function(){$('fwd').onclick()},'hide emerge'],['♩','mic',micTap],['☰','chapters',function(){$('listBtn').onclick()}],['⤓','ingest',ingest],
-  ['✕','cancel',cancelIngest,'hide'],['◎','lens',lensTap],['⌂','home screen',homeScreen,'hide']];   /* THE READER'S LENS (founder 24 Nov 2026: "a mic...witness lens and an ai that can reason in that"): the reader's own, kept only on their phone */   /* the empty blocks: cancel emerges while ingesting; home screen emerges when it is in */   /* founder 20 Nov 2026: words, ask, answer and witness removed; ingest added. The last row is only fog - the twelve channels still breathe */
+  ['⏭','next',function(){$('next').onclick()}],['↺','15 s',function(){$('back').onclick()},'hide emerge'],['☰','chapters',function(){$('listBtn').onclick()}],   /* stop lives in the play button (founder 24 Nov 2026: "if i hit play it changes to stop"); chapters sit under it ("i want chapters under stop") */
+  ['↻','15 s',function(){$('fwd').onclick()},'hide emerge'],['♩','mic',micTap],['◎','lens',lensTap],['⤓','ingest',ingest],   /* "mic ... LENS ... and ingest next" */
+  ['✕','cancel',cancelIngest,'hide'],['','',null],['⌂','home screen',homeScreen,'hide']];   /* the bottom row is the space the emerging words now pour into */   /* THE READER'S LENS (founder 24 Nov 2026: "a mic...witness lens and an ai that can reason in that"): the reader's own, kept only on their phone */   /* the empty blocks: cancel emerges while ingesting; home screen emerges when it is in */   /* founder 20 Nov 2026: words, ask, answer and witness removed; ingest added. The last row is only fog - the twelve channels still breathe */
  var grid=document.createElement('div');grid.id='twelve';
  W.forEach(function(w,k){var b=document.createElement('button');b.innerHTML='<span class="g">'+w[0]+'</span><small>'+w[1]+'</small>';if(w[3])b.className=w[3];
   b.setAttribute('aria-label',w[1]);b.style.setProperty('--d',(-k*0.55)+'s');
@@ -366,7 +367,7 @@ var AF={ctx:null,an:null,buf:null,e:new Array(12).fill(0)},GRID_BOTTOM=118;
  function playFace(on){spb.querySelector('.g').textContent=on?'■':'▶';spb.querySelector('small').textContent=on?'stop':'play';spb.setAttribute('aria-label',on?'stop':'play')}
  A.addEventListener('play',function(){emergeAll(true);playFace(true)});A.addEventListener('pause',function(){playFace(false)});A.addEventListener('ended',function(){playFace(false)});
  (function swell(){for(var k=0;k<12;k++)grid.children[k].style.setProperty('--e',AF.e[k].toFixed(3));requestAnimationFrame(swell)})();
- A.addEventListener('play',function(){grid.children[1].querySelector('.g').textContent='❚❚'});A.addEventListener('pause',function(){grid.children[1].querySelector('.g').textContent='▶'})})();
+ })();   /* the play button's face (▶ play / ■ stop) is set by playFace above */
 /* INGEST (founder 20 Nov 2026: "the offline... buried ... an ingest button, simple"): one touch takes all of Genesis into this phone -
    the page, the narration, the words, the art - so it opens without internet. Progress shows under the sphere. Jedidiah is not taken in. */
 /* founder 20 Nov 2026: "when i hit ingest use some of the empty blocks to emerge a cancel button" and "when i downloaded genesis i dont know
@@ -458,10 +459,12 @@ function lensKeep(blob,ch){return lensDB().then(function(d){return new Promise(f
 function lensAll(){return lensDB().then(function(d){return new Promise(function(ok){var out=[],q=d.transaction('p').objectStore('p').openCursor();q.onsuccess=function(){var c=q.result;if(c){out.push(c.value);c.continue()}else ok(out)}})})}
 function lensShow(){var ch=idx>=0?CH[idx].chapter:null;   /* opens at once (so the camera button is a real tap), then fills in what was kept */
  $('askb').innerHTML='<p class="q">The Witness Lens'+(ch?' · Genesis '+ch:'')+'</p>'+
-  '<p>Your camera becomes a lens for what you are hearing. Take a picture of something that speaks to you while Genesis plays - a page, a place, a sky, your hand-written notes. It is kept on this phone beside the chapter.</p>'+
+  '<p><b>The light lens.</b> Your camera does not film you. It only feels movement and turns it into light: as you move with Genesis, your movement glows around the sphere. No picture or video is made, shown, kept or sent - only light, here, and gone when you stop.</p>'+
+  '<p><button id="lenslight">'+(LIGHT.on?'◎ Stop the light lens':'◎ Start the light lens')+'</button></p>'+
+  '<p><b>Or take a picture.</b> Your camera becomes a lens for what you are hearing. Take a picture of something that speaks to you while Genesis plays - a page, a place, a sky, your hand-written notes. It is kept on this phone beside the chapter.</p>'+
   '<p>Under any picture tap <b>Share</b> to send it wherever you choose - your church, a friend, your family - straight from your phone, without AID. Nothing leaves your phone unless you send it, and before it does, the hidden location, time and phone details inside the photo are removed.</p>'+
   '<p><button id="lensnew">◎ Take a picture</button></p><div id="lensg"></div>';
- overlayOpen('askp');$('lensnew').onclick=function(){overlayClose();lensShoot()};
+ $('askp').querySelector('h3').textContent='Witness Lens';overlayOpen('askp');$('lensnew').onclick=function(){overlayClose();lensShoot()};$('lenslight').onclick=function(){overlayClose();LIGHT.on?lightStop():lightStart()};
  lensAll().then(function(all){var mine=all.filter(function(p){return ch==null||p.chapter===ch}),h='';
   if(!mine.length)h='<p>Nothing kept here yet.</p>';
   mine.forEach(function(p,k){h+='<p><img alt="" style="max-width:100%;border-radius:10px" src="'+URL.createObjectURL(p.blob)+'"><br><button data-ls="'+k+'">⇪ Share</button></p>'});   /* "Ask Jedidiah about this" returns when his door can see pictures (it takes text only, 4 KB) */
@@ -481,7 +484,31 @@ function lensShoot(){var i=document.createElement('input');i.type='file';i.accep
  i.onchange=function(){var f=i.files&&i.files[0];if(!f)return;var ch=idx>=0?CH[idx].chapter:null;
   lensKeep(f,ch).then(function(){speak(['Kept on your phone'+(ch?' with Genesis '+ch:'')+'.','Only you can see it.'],!A.paused)})
   .catch(function(){speak(['Your phone would not keep the picture.','Listening goes on.'],!A.paused)})};i.click()}
-function lensTap(){lensShow()}
+function lensTap(){if(LIGHT.on){lightStop();return}lensShow()}   /* while the light lens is on, one tap lets it go */
+/* THE LIGHT LENS (founder 24 Nov 2026: "the witness lens is the light movement cam ... the cam is just that a cam ... witness lens is actually
+   less invasive and more secure"). The camera's frames are read at 32x24 only to measure where movement is; each frame is dropped at once.
+   Nothing is drawn from the camera, nothing is kept, nothing leaves the phone. What the reader sees is light where they moved. */
+var LIGHT={on:false,st:null,v:null,raf:0,prev:null,cv:null,pts:[]};
+function lightStart(){if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){speak(['This phone cannot open the light lens.'],!A.paused);return}
+ navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:160,height:120},audio:false}).then(function(st){
+  LIGHT.st=st;LIGHT.on=true;var v=document.createElement('video');v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.srcObject=st;v.play();LIGHT.v=v;
+  var s=document.createElement('canvas');s.width=32;s.height=24;var sx=s.getContext('2d',{willReadFrequently:true});
+  var cv=document.createElement('canvas');cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none';document.body.appendChild(cv);LIGHT.cv=cv;
+  var cx=cv.getContext('2d');
+  (function step(){if(!LIGHT.on)return;LIGHT.raf=requestAnimationFrame(step);
+   cv.width!==innerWidth&&(cv.width=innerWidth);cv.height!==innerHeight&&(cv.height=innerHeight);
+   if(v.readyState>=2){sx.drawImage(v,0,0,32,24);var d=sx.getImageData(0,0,32,24).data,g=new Uint8Array(768),mx=0,my=0,m=0;
+    for(var i=0;i<768;i++){g[i]=(d[i*4]+d[i*4+1]+d[i*4+2])/3;if(LIGHT.prev){var dd=Math.abs(g[i]-LIGHT.prev[i]);if(dd>24){m+=dd;mx+=(31-i%32)*dd;my+=((i/32)|0)*dd}}}
+    LIGHT.prev=g;d=null;
+    if(m>400)LIGHT.pts.push({x:mx/m/31*cv.width,y:my/m/23*cv.height,e:Math.min(1,m/6000),t:performance.now()})}
+   cx.clearRect(0,0,cv.width,cv.height);var now=performance.now();LIGHT.pts=LIGHT.pts.filter(function(p){return now-p.t<1800});
+   LIGHT.pts.forEach(function(p){var a=(1-(now-p.t)/1800)*p.e,r=30+60*p.e,gr=cx.createRadialGradient(p.x,p.y,0,p.x,p.y,r);
+    gr.addColorStop(0,'rgba(255,240,214,'+(.55*a)+')');gr.addColorStop(.4,'rgba(232,192,106,'+(.3*a)+')');gr.addColorStop(1,'rgba(255,170,215,0)');
+    cx.fillStyle=gr;cx.beginPath();cx.arc(p.x,p.y,r,0,7);cx.fill()})})();
+  speak(['The light lens is on.','Only light - no picture is made or kept.','Tap the lens to let it go.'],!A.paused)})
+ .catch(function(){speak(['Your phone said no to the camera.','To allow it: tap the lock or the dots beside the address,','then Camera, then Allow.'],!A.paused)})}
+function lightStop(){LIGHT.on=false;cancelAnimationFrame(LIGHT.raf);if(LIGHT.st)LIGHT.st.getTracks().forEach(function(t){t.stop()});
+ if(LIGHT.cv)LIGHT.cv.remove();LIGHT.st=LIGHT.v=LIGHT.cv=LIGHT.prev=null;LIGHT.pts=[];speak(['The light lens is off. The camera is closed.'],!A.paused)}
 function sendVoice(b64,mime,was){if(!M||!M.ask_url){speak(['Jedidiah cannot be reached from this page.','Listening works without him.'],was);return}
  $('cap').textContent='Jedidiah is hearing you…';wait=true;
  timed(M.ask_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book:'Genesis',question:'(spoken)',audio:b64,mime:mime,history:HIST.slice(-6)})},240000)
